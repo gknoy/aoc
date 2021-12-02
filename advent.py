@@ -5,6 +5,7 @@
 #
 """
 import sys
+from dataclasses import dataclass
 
 # ----------------------
 # advent infrastructure
@@ -68,11 +69,104 @@ def one():
     return [part_1(), part_2()]
 
 
+def two():
+    """
+    Control a submarine :D
+    https://adventofcode.com/2021/day/2
+    """
+    commands = [item for item in get_line_items("input/2.txt")]
+    # toy input:
+    # commands = ["forward 5", "down 5", "forward 8", "up 3", "down 8", "forward 2"]
+
+    class Vehicle:
+        def position(self):
+            raise NotImplementedError()
+
+        def autonav(self, commands):
+            for command in commands:
+                self.nav(command)
+
+        def nav(self, command):
+            direction, magnitude = command.split()
+            magnitude = float(magnitude)
+
+            op = getattr(self, direction, None)
+            if op is None:
+                raise NotImplementedError(f"{direction} not supported")
+
+            op(magnitude)
+
+    def part_1():
+        """
+        Calculate the horizontal position and depth you would have after following the planned course.
+        What do you get if you multiply your final horizontal position by your final depth?
+        """
+
+        @dataclass
+        class Sub(Vehicle):
+            x: int
+            depth: int
+
+            def position(self):
+                return {"x": self.x, "depth": self.depth}
+
+            def forward(self, x):
+                self.x += x
+
+            def up(self, x):
+                self.depth = max(0, self.depth - x)
+
+            def down(self, x):
+                self.depth += x
+
+        sub = Sub(x=0, depth=0)
+        sub.autonav(commands)
+
+        return [sub.position(), sub.x * sub.depth]
+
+    def part_2():
+        """
+        - down X increases your aim by X units.
+        - up X decreases your aim by X units.
+        - forward X does two things:
+            - It increases your horizontal position by X units.
+            - It increases your depth by your aim multiplied by X.
+        """
+
+        @dataclass
+        class AimingSub(Vehicle):
+            x: int
+            depth: int
+            aim: int  # amount that we are aiming DOWNWARD
+
+            def position(self):
+                return {"x": self.x, "depth": self.depth, "aim": self.aim}
+
+            def forward(self, x):
+                self.x += x
+                self.depth = max(0, self.depth + (self.aim * x))
+
+            def up(self, x):
+                # nose up
+                self.aim -= x
+
+            def down(self, x):
+                # nose down
+                self.aim += x
+
+        sub = AimingSub(x=0, depth=0, aim=0)
+        sub.autonav(commands)
+
+        return [sub.position(), sub.x * sub.depth]
+
+    return [part_1(), part_2()]
+
+
 # -----------------------
 # actually run things ...
 # -----------------------
 
-ADVENTS = {"1": one}
+ADVENTS = {"1": one, "2": two}
 
 
 if __name__ == "__main__":
