@@ -30,14 +30,19 @@ def one():
 
     def count_increasing_measurements(measurements):
         return sum(
-            [
-                1
-                for index, item in enumerate(measurements)
-                if (index > 0 and measurements[index] > measurements[index - 1])
-            ]
+            1
+            for index, item in enumerate(measurements)
+            if (index > 0 and measurements[index] > measurements[index - 1])
         )
 
     return count_increasing_measurements(measurements)
+
+
+def one_b():
+    """
+    Count increasing sums of N-measurement windows in the input
+    """
+    measurements = [int(item) for item in get_line_items("input/1.txt")]
 
 
 # -----------------------
@@ -46,6 +51,7 @@ def one():
 
 ADVENTS = {
     "1": one,
+    "1b": one_b,
 }
 
 
