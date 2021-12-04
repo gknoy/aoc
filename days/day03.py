@@ -43,23 +43,31 @@ def digits_to_int(digits):
     return int("".join(digit_strings), 2)
 
 
+def calc_gamma_digits(digits):
+    """
+    Most common bit in each column of digits
+    ties go to 1
+    """
+    # GAMMA:
+    #   Each bit in the gamma rate is the most common bit in the corresponding
+    #   position of all numbers in the diagnostic report.
+    item_len = len(digits[0])
+    one_counts = [sum(vertical_slice(digits, index)) for index in range(item_len)]
+    return [(1 if item >= (len(digits) / 2) else 0) for item in one_counts]
+
+
+def epsilon_from_gamma(gamma_digits):
+    # invert bits
+    xform = [1, 0]
+    return [xform[d] for d in gamma_digits]
+
+
 def part_1(data):
-    item_len = len(data[0])  # each datum is the same length
+    # power consumption
     digits = data_digits(data)
 
-    one_counts = [sum(vertical_slice(digits, index)) for index in range(item_len)]
-
-    # GAMMA:
-    #   Each bit in the gamma rate ... the most common bit in the corresponding
-    #   position of all numbers in the diagnostic report.
-    gamma_digits = [(1 if item >= (len(data) / 2) else 0) for item in one_counts]
-
-    def epsilon_from(gamma_digits):
-        # invert bits
-        xform = [1, 0]
-        return [xform[d] for d in gamma_digits]
-
-    epsilon_digits = epsilon_from(gamma_digits)
+    gamma_digits = calc_gamma_digits(digits)
+    epsilon_digits = epsilon_from_gamma(gamma_digits)
 
     gamma = digits_to_int(gamma_digits)
     epsilon = digits_to_int(epsilon_digits)
@@ -70,8 +78,14 @@ def part_1(data):
     return power_consumption(gamma, epsilon)
 
 
+def filter_data_by_column_value(data, index, value):
+    return (item for item in data if item[index] == value)
+
+
 def part_2(data):
-    return None
+    # life support rating
+    digits = data_digits(data)
+    most_common_bits = calc_gamma_digits(digits)
 
 
 def day_3(use_toy_data=False):
