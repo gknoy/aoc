@@ -56,7 +56,7 @@ def calc_gamma_digits(digits):
     return [(1 if item >= (len(digits) / 2) else 0) for item in one_counts]
 
 
-def epsilon_from_gamma(gamma_digits):
+def invert_bits(gamma_digits):
     # invert bits
     xform = [1, 0]
     return [xform[d] for d in gamma_digits]
@@ -67,7 +67,7 @@ def part_1(data):
     digits = data_digits(data)
 
     gamma_digits = calc_gamma_digits(digits)
-    epsilon_digits = epsilon_from_gamma(gamma_digits)
+    epsilon_digits = invert_bits(gamma_digits)
 
     gamma = digits_to_int(gamma_digits)
     epsilon = digits_to_int(epsilon_digits)
@@ -78,14 +78,34 @@ def part_1(data):
     return power_consumption(gamma, epsilon)
 
 
-def filter_data_by_column_value(data, index, value):
-    return (item for item in data if item[index] == value)
+def filter_data_by_column_value_freq(data, col, most_frequent=True):
+    if len(data) == 1:
+        return data
+    most_common_bits = calc_gamma_digits(data)
+    least_common_bits = invert_bits(most_common_bits)
+
+    freq = most_common_bits if most_frequent else least_common_bits
+    return [item for item in data if item[col] == freq[col]]
 
 
 def part_2(data):
     # life support rating
     digits = data_digits(data)
-    most_common_bits = calc_gamma_digits(digits)
+
+    item_len = len(digits[0])
+
+    oxy_vals = digits
+    for col_index in range(item_len):
+        oxy_vals = filter_data_by_column_value_freq(oxy_vals, col_index, True)
+
+    co2_vals = digits
+    for col_index in range(item_len):
+        co2_vals = filter_data_by_column_value_freq(co2_vals, col_index, False)
+
+    oxy_rating = digits_to_int(oxy_vals[0])
+    scrubber_rating = digits_to_int(co2_vals[0])
+
+    return oxy_rating * scrubber_rating
 
 
 def day_3(use_toy_data=False):
