@@ -44,14 +44,14 @@ def interpolate(a, b):
     delta_x = b[0] - a[0]
     delta_y = b[1] - a[1]
     slope = delta_y / delta_x  # this can be negative
+    # b can be leftward of a:
+    step = 1 if (a[0] < b[0]) else -1
 
     def f(x):
         # point on line (segment) intersecting A and B
-        return a[0] + slope * (x - a[0])
+        return a[1] + slope * (x - a[0])
 
-    points = [(x, f(x)) for x in range(a[0], b[0])]
-
-    return list(sorted(points))
+    return [(x, f(x)) for x in range(a[0], b[0] + step, step)]
 
 
 @pytest.mark.parametrize(
@@ -64,7 +64,7 @@ def interpolate(a, b):
     ],
 )
 def test_interpolate(a, b, expected):
-    assert interpolate(a, b) == expected
+    assert sorted(interpolate(a, b)) == expected
 
 
 def init_grid():
