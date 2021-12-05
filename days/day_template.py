@@ -4,12 +4,12 @@
 from utils import get_line_items
 
 input = list(get_line_items("input/NN.txt"))
-toy_input = [
-]
+toy_input = []
 
 
 def part_1(input, verbose=False):
     pass
+
 
 def part_2(input, verbose=False):
     pass
