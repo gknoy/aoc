@@ -103,8 +103,8 @@ class Grid:
         self.max_y = max(point[1] for segment in data for point in segment)
 
         self.grid = [
-            [0 for y in range(self.min_y, self.max_y + 1)]
-            for x in range(self.min_x, self.max_x + 1)
+            [0 for y in range(min(0, self.min_y), self.max_y + 1)]
+            for x in range(min(0, self.min_x), self.max_x + 1)
         ]
 
     def populate(self):
