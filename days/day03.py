@@ -108,6 +108,6 @@ def part_2(data, verbose=False):
     return oxy_rating * scrubber_rating
 
 
-def day_3(use_toy_data=False):
+def day_3(use_toy_data=False, verbose=False):
     _data = toy_data if use_toy_data else data
     return [part_1(data, verbose), part_2(data, verbose)]

@@ -1,8 +1,9 @@
 """
 # https://adventofcode.com/2021/day/4
 """
+import time
+
 from collections import defaultdict
-from functools import cached_property
 from utils import get_line_items
 
 input = list(get_line_items("input/04.txt"))
@@ -45,11 +46,13 @@ class Board:
         self.rows = self.parse_rows(board_lines)
         self.cols = [[row[i] for row in self.rows] for i in range(len(self.rows[0]))]
         self.score = 0
+        assert len(self.rows) == len(self.cols)
 
     def __str__(self):
+        """Pretty-print with selected numbers in bold"""
         row_strings = [
             "".join([self.render_item(item) for item in row]) for row in self.rows
-        ]
+        ] + [f"  score: {self.score}\n"]
         return "\n".join(row_strings)
 
     def render_item(self, number):
@@ -91,7 +94,7 @@ class Board:
         return 0
 
 
-def get_board_lines(input):
+def get_boards(input):
     boards = []
     lines = []
 
@@ -114,7 +117,7 @@ def part_1(input, verbose=False):
     Play bingo with input draws + boards
     """
     calls = list(map(int, input[0].split(",")))
-    boards = get_board_lines(input[1:])
+    boards = get_boards(input[1:])
 
     for number in calls:
         scores = [board.call(number) for board in boards]
@@ -128,7 +131,52 @@ def part_1(input, verbose=False):
 
 
 def part_2(input, verbose=False):
-    pass
+    """
+    Find the LAST winning board
+    """
+    calls = list(map(int, input[0].split(",")))
+    all_boards = get_boards(input[1:])
+    boards = [b for b in all_boards]
+
+    for number in calls:
+        if verbose:
+            print(f">>> Called: {number}")
+        scores = [board.call(number) for board in boards]
+        boards_to_drop = []
+        for index, score in enumerate(scores):
+            if score > 0:
+                boards_to_drop.append(index)
+                if len(boards) == 1:
+                    # this is the last one!
+                    if verbose:
+                        print("Last winning board:")
+                        print(boards[index])
+                    assert score == boards[index].score
+                    return score
+
+        # Drop any boards that were finished
+        if boards_to_drop:
+            if verbose:
+                print(f"    Dropping boards {boards_to_drop}")
+                for index in boards_to_drop:
+                    print(boards[index])
+
+            last_dropped = boards[boards_to_drop[-1]]
+
+            # drop boards that had scores:
+            boards = [
+                board for board in boards if board.score == 0
+            ]
+            if len(boards) == 0:
+                # none of the boards are left, so use the one that scored LAST:
+                if verbose:
+                    print("   All boards dropped. Last board:")
+                    print(last_dropped)
+                return last_dropped.score
+
+        if verbose:
+            print(f"    {len(boards)} boards remaining\n")
+            time.sleep(1)
 
 
 def day_4(use_toy_data=False, verbose=False):
