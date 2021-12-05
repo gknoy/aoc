@@ -4,7 +4,7 @@
 import time
 
 from collections import defaultdict
-from utils import get_line_items
+from utils import get_line_items, BOLD, CLEAR
 
 input = list(get_line_items("input/04.txt"))
 toy_input = [
@@ -28,9 +28,6 @@ toy_input = [
     "22 11 13  6  5",
     " 2  0 12  3  7",
 ]
-
-BOLD = "\033[1m"
-CLEAR = "\033[0m"
 
 
 class Board:
