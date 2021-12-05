@@ -79,7 +79,7 @@ class AimingSub(Vehicle):
         self.aim += x
 
 
-def part_1(commands):
+def part_1(commands, verbose=False):
     """
     Calculate the horizontal position and depth you would have after following the planned course.
     What do you get if you multiply your final horizontal position by your final depth?
@@ -90,12 +90,12 @@ def part_1(commands):
     return sub.x * sub.depth
 
 
-def part_2(commands):
+def part_2(commands, verbose=False):
     sub = AimingSub(x=0, depth=0, aim=0)
     sub.autonav(commands)
     return sub.x * sub.depth
 
 
-def day_2(use_toy_data=False):
+def day_2(use_toy_data=False, verbose=False):
     data = toy_commands if use_toy_data else commands
-    return [part_1(data), part_2(data)]
+    return [part_1(data, verbose), part_2(data, verbose)]

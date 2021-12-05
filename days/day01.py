@@ -15,14 +15,14 @@ def count_increasing_items(items):
     )
 
 
-def part_1(measurements):
+def part_1(measurements, verbose=False):
     """
     Count how many times measurement is larger than previous measurement
     """
     return count_increasing_items(measurements)
 
 
-def part_2(measurements):
+def part_2(measurements, verbose=False):
     """
     Count increasing sums of N-measurement windows in the input
     """
@@ -46,6 +46,6 @@ def part_2(measurements):
     return count_increasing_items(sliding_window_sums)
 
 
-def day_1(use_toy_data=False):
+def day_1(use_toy_data=False, verbose=False):
     data = toy_measurements if use_toy_data else measurements
-    return [part_1(data), part_2(data)]
+    return [part_1(data, verbose), part_2(data, verbose)]

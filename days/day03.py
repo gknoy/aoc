@@ -62,7 +62,7 @@ def invert_bits(gamma_digits):
     return [xform[d] for d in gamma_digits]
 
 
-def part_1(data):
+def part_1(data, verbose=False):
     # power consumption
     digits = data_digits(data)
 
@@ -88,7 +88,7 @@ def filter_data_by_column_value_freq(data, col, most_frequent=True):
     return [item for item in data if item[col] == freq[col]]
 
 
-def part_2(data):
+def part_2(data, verbose=False):
     # life support rating
     digits = data_digits(data)
 
@@ -110,4 +110,4 @@ def part_2(data):
 
 def day_3(use_toy_data=False):
     _data = toy_data if use_toy_data else data
-    return [part_1(_data), part_2(_data)]
+    return [part_1(data, verbose), part_2(data, verbose)]
