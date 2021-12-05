@@ -150,13 +150,18 @@ def part_1(input, verbose=False):
     grid = Grid(input, orthogonal_only=True)
     grid.populate()
     if verbose:
+        print("--- part 1 grid")
         print(grid)
     return grid.score(min_overlap=2)
 
 
 def part_2(input, verbose=False):
     grid = Grid(input)
-    return None
+    grid.populate()
+    if verbose:
+        print("--- part 2 grid")
+        print(grid)
+    return grid.score(min_overlap=2)
 
 
 def day_5(use_toy_data=False, verbose=False):
