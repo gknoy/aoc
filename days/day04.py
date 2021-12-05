@@ -164,9 +164,7 @@ def part_2(input, verbose=False):
             last_dropped = boards[boards_to_drop[-1]]
 
             # drop boards that had scores:
-            boards = [
-                board for board in boards if board.score == 0
-            ]
+            boards = [board for board in boards if board.score == 0]
             if len(boards) == 0:
                 # none of the boards are left, so use the one that scored LAST:
                 if verbose:
