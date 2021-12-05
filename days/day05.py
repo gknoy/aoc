@@ -1,6 +1,7 @@
 """
 # https://adventofcode.com/2021/day/5
 """
+import pytest
 from utils import get_line_items
 
 input = list(get_line_items("input/05.txt"))
@@ -32,6 +33,45 @@ expected_maps = {
 }
 
 
+def parse_input(lines):
+    # return pairs of tuples for each line
+    return [[tuple(pair.split(",")) for pair in line.split(" -> ")] for line in lines]
+
+
+def interpolate(a, b):
+    # Get all the points on a line between a and b,
+    # accounting for slope between a and b
+    delta_x = b[0] - a[0]
+    delta_y = b[1] - a[1]
+    slope = delta_y / delta_x  # this can be negative
+
+    def f(x):
+        # point on line (segment) intersecting A and B
+        return a[0] + slope * (x - a[0])
+
+    points = [(x, f(x)) for x in range(a[0], b[0])]
+
+    return list(sorted(points))
+
+
+@pytest.mark.parametrize(
+    "a,b,expected",
+    [
+        [(0, 0), (2, 2), [(0, 0), (1, 1), (2, 2)]],
+        [(2, 2), (0, 0), [(0, 0), (1, 1), (2, 2)]],
+        [(0, 2), (2, 0), [(0, 2), (1, 1), (2, 0)]],
+        [(2, 0), (0, 2), [(0, 2), (1, 1), (2, 0)]],
+    ],
+)
+def test_interpolate(a, b, expected):
+    assert interpolate(a, b) == expected
+
+
+def init_grid():
+    # FIXME: Use sparse grid in numpy
+    return []
+
+
 def part_1(input, verbose=False):
     pass
 
@@ -42,4 +82,5 @@ def part_2(input, verbose=False):
 
 def day_5(use_toy_data=False, verbose=False):
     data = toy_input if use_toy_data else input
+    data = parse_input(data)
     return [part_1(data, verbose), part_2(data, verbose)]
