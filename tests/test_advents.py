@@ -1,6 +1,7 @@
 #
 # Sanity checks that all advents work even after refactoring
 #
+import pytest
 from advent import ADVENTS
 
 TOY_EXPECTED = {
@@ -10,7 +11,7 @@ TOY_EXPECTED = {
     4: [4512, 1924],
     5: [5, 12],
     6: [5934, 26984457539],
-    7: [37, None],
+    7: [37, 168],
 }
 
 EXPECTED = {
@@ -28,8 +29,13 @@ def _advent(item, use_toy_data=False, verbose=False):
     return ADVENTS[item](use_toy_data=use_toy_data, verbose=verbose)
 
 
-def test_advents():
-    for key in ADVENTS:
-        e_key = int(key)
-        assert TOY_EXPECTED[e_key] == _advent(key, use_toy_data=True)
-        assert EXPECTED[e_key] == _advent(key, use_toy_data=False)
+@pytest.mark.parametrize(
+    "key,expected", [(key, TOY_EXPECTED[int(key)]) for key in ADVENTS]
+)
+def test_toy_answers(key, expected):
+    assert expected == _advent(key, use_toy_data=True)
+
+
+@pytest.mark.parametrize("key,expected", [(key, EXPECTED[int(key)]) for key in ADVENTS])
+def test_answers(key, expected):
+    assert expected == _advent(key, use_toy_data=False)
