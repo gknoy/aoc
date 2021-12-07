@@ -38,4 +38,5 @@ def test_toy_answers(key, expected):
 
 @pytest.mark.parametrize("key,expected", [(key, EXPECTED[int(key)]) for key in ADVENTS])
 def test_answers(key, expected):
+    assert expected is not None
     assert expected == _advent(key, use_toy_data=False)
