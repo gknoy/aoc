@@ -3,15 +3,10 @@
 """
 from collections import defaultdict
 
-from utils import get_line_items
+from utils import get_line_items, parse_one_line_input
 
 input = list(get_line_items("input/06.txt"))
 toy_input = ["3,4,3,1,2"]
-
-
-def parse_input(input):
-    line = input[0]
-    return list(map(int, line.split(",")))
 
 
 def init_fish_buckets(input, max_cd=8):
@@ -63,5 +58,5 @@ def part_2(input, verbose=False):
 
 def day_6(use_toy_data=False, verbose=False):
     data = toy_input if use_toy_data else input
-    data = parse_input(data)
+    data = parse_one_line_input(data)
     return [part_1(data, verbose), part_2(data, verbose)]
