@@ -3,7 +3,12 @@
 #
 # https://adventofcode.com/2021/day/3
 """
-from utils import get_line_items
+from utils import (
+    two_d_array_from_digt_strings,
+    digits_to_int,
+    get_line_items,
+    vertical_slice,
+)
 
 toy_data = [
     "00100",
@@ -21,26 +26,6 @@ toy_data = [
 ]
 
 data = [item for item in get_line_items("input/03.txt")]
-
-
-def digits_array(digits_str):
-    # "010" -> [0, 1, 0]
-    return list(map(int, digits_str))
-
-
-def data_digits(data):
-    # ["010", "001"] -> [[0,1,0], [0,0,1]]
-    # return np.array(digits_array(number_str) for number_str in data)
-    return list(digits_array(number_str) for number_str in data)
-
-
-def vertical_slice(data, index):
-    return [item[index] for item in data]
-
-
-def digits_to_int(digits):
-    digit_strings = [str(digit) for digit in digits]
-    return int("".join(digit_strings), 2)
 
 
 def calc_gamma_digits(digits):
@@ -64,13 +49,13 @@ def invert_bits(gamma_digits):
 
 def part_1(data, verbose=False):
     # power consumption
-    digits = data_digits(data)
+    digits = two_d_array_from_digt_strings(data)
 
     gamma_digits = calc_gamma_digits(digits)
     epsilon_digits = invert_bits(gamma_digits)
 
-    gamma = digits_to_int(gamma_digits)
-    epsilon = digits_to_int(epsilon_digits)
+    gamma = digits_to_int(gamma_digits, base=2)
+    epsilon = digits_to_int(epsilon_digits, base=2)
 
     def power_consumption(gamma, epsilon):
         return gamma * epsilon
@@ -90,7 +75,7 @@ def filter_data_by_column_value_freq(data, col, most_frequent=True):
 
 def part_2(data, verbose=False):
     # life support rating
-    digits = data_digits(data)
+    digits = two_d_array_from_digt_strings(data)
 
     item_len = len(digits[0])
 
@@ -102,8 +87,8 @@ def part_2(data, verbose=False):
     for col_index in range(item_len):
         co2_vals = filter_data_by_column_value_freq(co2_vals, col_index, False)
 
-    oxy_rating = digits_to_int(oxy_vals[0])
-    scrubber_rating = digits_to_int(co2_vals[0])
+    oxy_rating = digits_to_int(oxy_vals[0], base=2)
+    scrubber_rating = digits_to_int(co2_vals[0], base=2)
 
     return oxy_rating * scrubber_rating
 

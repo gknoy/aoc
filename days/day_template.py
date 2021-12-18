@@ -1,10 +1,11 @@
 """
 # https://adventofcode.com/2021/day/N
 """
+from typing import List
 from utils import get_line_items
 
 input = list(get_line_items("input/NN.txt"))
-toy_input = []
+toy_input: List[str] = []
 
 
 def part_1(input, verbose=False):

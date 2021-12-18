@@ -5,6 +5,7 @@ from utils import get_line_items
 
 input = list(get_line_items("input/09.txt"))
 toy_input = [
+    # lines input
     "2199943210",
     "3987894921",
     "9856789892",

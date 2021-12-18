@@ -1,7 +1,8 @@
 """
 # https://adventofcode.com/2021/day/8
 """
-from utils import get_line_items
+from utils import two_d_array_from_digt_strings, digits_to_int, get_line_items
+
 
 input = list(get_line_items("input/08.txt"))
 toy_input = [
@@ -238,12 +239,11 @@ def part_1(input, verbose=False):
 
 def part_2(input, verbose=False):
     data = parse_lines(input)
-
-    def concat_digits(digits, output):
-        """[1, 2, 3, 4] -> 1234"""
-        return int("".join(map(str, output)))
-
-    return sum(concat_digits(*translated) for translated in map(translate_line, data))
+    return sum(
+        digits_to_int(translated[1])
+        # ^^ _, digits = translated
+        for translated in map(translate_line, data)
+    )
 
 
 def day_8(use_toy_data=False, verbose=False):
