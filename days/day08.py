@@ -237,7 +237,17 @@ def part_1(input, verbose=False):
 
 
 def part_2(input, verbose=False):
-    pass
+    data = parse_lines(input)
+
+    if verbose:
+        fake_line = [item for item in UNSCRAMBLED if type(item) is str]
+        deduce_digits_from_signals(fake_line, verbose=verbose)
+
+    def concat_digits(digits, output):
+        """[1, 2, 3, 4] -> 1234"""
+        return int("".join(map(str, output)))
+
+    return sum(concat_digits(*translated) for translated in map(translate_line, data))
 
 
 def day_8(use_toy_data=False, verbose=False):
