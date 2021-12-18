@@ -7,7 +7,7 @@ BOLD = "\033[1m"
 CLEAR = "\033[0m"
 
 
-def get_line_items(fname) -> Generator[str]:
+def get_line_items(fname) -> Generator[str, Any, None]:
     """Read all the lines from an input file into an array of strings"""
     with open(fname) as f:
         return (item.strip() for item in f.readlines())
