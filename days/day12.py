@@ -8,29 +8,35 @@ from utils import get_line_items
 
 input = list(get_line_items("input/12.txt"))
 toy_input: List[str] = [
-    # Looks like:
-    #      start
-    #      /   \
-    #  c--A-----b--d
-    #      \   /
-    #       end
-    "start-A",
-    "start-b",
-    "A-c",
-    "A-b",
-    "b-d",
-    "A-end",
-    "b-end",
+    # # 10 paths:
+    # #      start
+    # #      /   \
+    # #  c--A-----b--d
+    # #      \   /
+    # #       end
+    # "start-A",
+    # "start-b",
+    # "A-c",
+    # "A-b",
+    # "b-d",
+    # "A-end",
+    # "b-end",
+    # 19 paths:
+    "dc-end",
+    "HN-start",
+    "start-kj",
+    "dc-start",
+    "dc-HN",
+    "LN-dc",
+    "HN-end",
+    "kj-sa",
+    "kj-HN",
+    "kj-dc",
 ]
 
 
-
-def is_large(name):
-    return name.to_upper() == name
-
-
 def is_small(name):
-    return name.to_lower() == name
+    return name.lower() == name
 
 
 class Cave:
@@ -38,22 +44,6 @@ class Cave:
     def __init__(self, name):
         self.name = name
         self.edges = set()
-
-    @cached_property
-    def is_small(self):
-        return self.name.to_lower() == self.name
-
-    @cached_property
-    def is_large(self):
-        return self.name.to_upper() == self.name
-
-    @cached_property
-    def is_start(self):
-        return self.name == "start"
-
-    @cached_property
-    def is_end(self):
-        return self.name == "end"
 
     def add_edge(self, name):
         if name != self.name:
@@ -79,10 +69,42 @@ def get_cave_system(edges: List[str]) -> Dict[str, Cave]:
     return caves
 
 
-def find_paths_visiting_small_caves_only_once(caves):
-    paths = set()
-    start = caves["start"]
-    end = caves["end"]
+def cons(path, node):
+    return (*path, node)
+
+
+def is_complete(path):
+    return path[-1] == "end"
+
+
+def is_valid(path):
+    small_caves = [node for node in path if is_small(node)]
+    return (
+        path[0] == "start"  # note that 'start' counts as a small cave
+        and "start" not in path[1:]  # start not repeated
+        and "end" not in path[:-1]  # end not repeated
+        and len(set(small_caves)) == len(small_caves)
+    )
+
+
+def find_paths(caves, paths):
+    # For each path we already know, look at the last node on the path
+    # and _try to add_ all the valid paths that are path+exit
+    if all(is_valid(path) and is_complete(path) for path in paths):
+        return paths
+
+    def last_cave(path):
+        return caves[path[-1]]
+
+    next_paths = {cons(path, edge) for path in paths for edge in last_cave(path).edges}
+
+    # print(">>> path candidates:")
+    # from pprint import pprint; pprint(next_paths)
+
+    valid_paths = {path for path in next_paths if is_valid(path)}
+    return valid_paths | find_paths(
+        caves, {path for path in valid_paths if not is_complete(path)}
+    )
 
 
 def part_1(input, verbose=False):
@@ -94,10 +116,23 @@ def part_1(input, verbose=False):
     """
     caves = get_cave_system(input)
     start = caves["start"]
-    end = caves["end"]
+    start_paths = {(start.name, edge) for edge in start.edges}
 
+    # yay recursion ¯\_(ツ)_/¯
+    all_paths = find_paths(caves, start_paths)
 
-    pass
+    complete_paths = {path for path in all_paths if is_complete(path)}
+
+    if verbose:
+        from pprint import pprint
+
+        # print(">>> all paths")
+        # pprint(all_paths)
+
+        print(">>> complete paths")
+        pprint(complete_paths)
+
+    return len(complete_paths)
 
 
 def part_2(input, verbose=False):
