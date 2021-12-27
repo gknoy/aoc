@@ -1,7 +1,7 @@
 # ----------------------
 # advent infrastructure
 # ----------------------
-from typing import Any, Generator, List
+from typing import Any, Generator, List, Set, Tuple
 
 BOLD = "\033[1m"
 CLEAR = "\033[0m"
@@ -43,3 +43,43 @@ def vertical_slice(data: List[List[Any]], index: int) -> List[Any]:
 def digits_to_int(digits: List[int], base=10) -> int:
     digit_strings = [str(digit) for digit in digits]
     return int("".join(digit_strings), base)
+
+
+# custom type
+Coord = Tuple[int, int]
+
+
+def up(coord: Coord, min_row=0) -> Coord:
+    return (max(min_row, coord[0] - 1), coord[1])
+
+
+def down(coord: Coord, max_row) -> Coord:
+    return (min(max_row, coord[0] + 1), coord[1])
+
+
+def left(coord: Coord, min_col=0) -> Coord:
+    return (coord[0], max(min_col, coord[1] - 1))
+
+
+def right(coord: Coord, max_col) -> Coord:
+    return (coord[0], min(max_col, coord[1] + 1))
+
+
+def neighbors(coord: Coord, max_row, max_col, include_diagonals=True) -> Set[Coord]:
+    diagonal_neighbors = (
+        {
+            left(up(coord)),
+            left(down(coord, max_row)),
+            right(up(coord), max_col),
+            right(down(coord, max_row), max_col),
+        }
+        if include_diagonals
+        else {}
+    )
+    return {
+        *diagonal_neighbors,
+        up(coord),
+        down(coord, max_row),
+        left(coord),
+        right(coord, max_col),
+    } ^ {coord}

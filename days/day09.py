@@ -4,7 +4,7 @@
 from typing import Callable, Dict, Optional, Set, Tuple
 from colors import none, bold, cyan, red, green, blue, magenta, yellow
 
-from utils import get_line_items, two_d_array_from_digt_strings
+from utils import get_line_items, neighbors, two_d_array_from_digt_strings
 
 input = list(get_line_items("input/09.txt"))
 toy_input = [
@@ -91,28 +91,6 @@ def part_1(input, verbose=False):
 # --------------------------
 
 
-def up(coord, min_row=0):
-    return (max(min_row, coord[0] - 1), coord[1])
-
-
-def down(coord, max_row):
-    return (min(max_row, coord[0] + 1), coord[1])
-
-
-def left(coord, min_col=0):
-    return (coord[0], max(min_col, coord[1] - 1))
-
-
-def right(coord, max_col):
-    return (coord[0], min(max_col, coord[1] + 1))
-
-
-def neighbors(coord, max_row, max_col):
-    return {up(coord), down(coord, max_row), left(coord), right(coord, max_col)} ^ {
-        coord
-    }
-
-
 def test_coord_manipulations():
     c = (3, 5)
     expected = {"up": (2, 5), "down": (4, 5), "left": (3, 4), "right": (3, 6)}
@@ -148,7 +126,7 @@ def fill_basin(grid, starting_minimum: Tuple[int, int]) -> Set[Tuple[int, int]]:
         current_val = _grid(item)
         # nbcs = neighbors(item, max_row, max_col)
         # print(f" -- neighbors: {nbcs}")
-        for coord in neighbors(item, max_row, max_col):
+        for coord in neighbors(item, max_row, max_col, include_diagonals=False):
             # print(f"neighbor: {coord}")
             val = _grid(coord)
             # print(f"  cur: {current_val} < {val} ?")
