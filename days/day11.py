@@ -145,7 +145,16 @@ def part_1(input, verbose=False):
 
 
 def part_2(input, verbose=False):
-    pass
+    grid = NicerGrid(two_d_array_from_digt_strings(input))
+    grid_size = grid.n_rows * grid.n_cols
+
+    step_number = 0
+    while True:
+        step_number += 1
+        n_flashed = step(grid, verbose=verbose)
+        if n_flashed == grid_size:
+            # and {0} == set(grid[coord] for coord in grid.coords):
+            return step_number
 
 
 def day_11(use_toy_data=False, verbose=False):
