@@ -2,9 +2,9 @@
 # https://adventofcode.com/2021/day/9
 """
 from typing import Callable, Dict, Optional, Set, Tuple
-from colors import none, bold, cyan, red, green, blue, magenta, yellow
+from colors import none, bold, cyan, red, green, blue, magenta, yellow  # type: ignore
 
-from utils import get_line_items, neighbors, two_d_array_from_digt_strings
+from utils import Coord, get_line_items, neighbors, two_d_array_from_digt_strings
 
 input = list(get_line_items("input/09.txt"))
 toy_input = [
@@ -17,13 +17,13 @@ toy_input = [
 ]
 
 
-def render(grid, color_coords: Optional[Dict[Callable, Set[Tuple[int, int]]]] = None):
+def render(grid, color_coords: Optional[Dict[Callable, Set[Coord]]] = None):
     """Print a 2d grid with some coordinates in colors"""
     color_coords = color_coords or {}
 
     def render_cell(row: int, col: int) -> str:
         number = grid[row][col]
-        for color_fn, coords in color_coords.items():
+        for color_fn, coords in color_coords.items():  # type: ignore
             if (row, col) in coords:
                 return color_fn(f"{number:1}")
         return f"{number:1}"

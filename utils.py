@@ -7,6 +7,11 @@ BOLD = "\033[1m"
 CLEAR = "\033[0m"
 
 
+# custom type
+Coord = Tuple[int, int]
+Grid = List[List[int]]
+
+
 def get_line_items(fname) -> Generator[str, Any, None]:
     """Read all the lines from an input file into an array of strings"""
     with open(fname) as f:
@@ -26,7 +31,7 @@ def digits_array(digits_str: str) -> List[int]:
     return list(map(int, digits_str))
 
 
-def two_d_array_from_digt_strings(data: List[str]) -> List[List[int]]:
+def two_d_array_from_digt_strings(data: List[str]) -> Grid:
     """
     :param data: A list of strings of digits
     :return: A list of lists of digits
@@ -43,10 +48,6 @@ def vertical_slice(data: List[List[Any]], index: int) -> List[Any]:
 def digits_to_int(digits: List[int], base=10) -> int:
     digit_strings = [str(digit) for digit in digits]
     return int("".join(digit_strings), base)
-
-
-# custom type
-Coord = Tuple[int, int]
 
 
 def up(coord: Coord, min_row=0) -> Coord:
