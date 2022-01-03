@@ -96,8 +96,6 @@ def find_paths(caves, paths, is_valid):
 
     valid_paths = {path for path in next_paths if is_valid(path)}
 
-    import ipdb; ipdb.set_trace()###REMOVE
-
     return valid_paths | find_paths(
         caves, {path for path in valid_paths if not is_complete(path)}, is_valid
     )
@@ -156,20 +154,25 @@ def part_2(input, verbose=False):
         counter = Counter(small_caves)
         counter2 = Counter(counter.values()) # how many we visited more than once
 
+        most_visit_counts = max(counter2.keys())
         only_one_duplicate = 1 >= counter2.get(2, 0)
-        import ipdb; ipdb.set_trace()###REMOVE
 
-        # if 2 in counter2:
-        #     del counter2[1]
+        # if len(path) > 8:
+        #     print(f"--- is_valid: path:        {render(path)}")
+        #     print(f"            : small_caves: {render(small_caves)}")
+        #     print(f"            : counter:  {counter}")
+        #     print(f"            : counter2: {counter2}")
+        #     print(f"            : only_one_duplicate: {only_one_duplicate}")
         #
-        # # no more than one small cave duplicated
-        # only_one_duplicate = 1 >= sum(counter2.values())
+        #     import ipdb; ipdb.set_trace()###REMOVE
+        #     pass
 
         return (
             path[0] == "start"  # note that 'start' counts as a small cave
             and "start" not in path[1:]  # start not repeated
             and "end" not in path[:-1]  # end not repeated
-            and only_one_duplicate
+            and most_visit_counts <= 2  # don't visit the same small cave more than twice
+            and only_one_duplicate  # don't visit more than one small cave multiple times
         )
 
     # yay recursion ¯\_(ツ)_/¯
@@ -178,16 +181,28 @@ def part_2(input, verbose=False):
     complete_paths = {path for path in all_paths if is_complete(path)}
 
     if verbose:
-        from pprint import pprint
-
         # print(">>> all paths")
         # pprint(all_paths)
 
         print(">>> complete paths")
-        pprint(tuple(sorted(render(path) for path in complete_paths)))
+        pretty_print_sorted_paths(complete_paths)
 
     return len(complete_paths)
 
+
+def pretty_print_sorted_paths(paths):
+    from pprint import pprint
+
+    paths = list(paths)
+    sort_paths_in_place_by_length_before_alphabet(paths)
+    # print(tuple(render(path) for path in paths))
+    print("\n".join((tuple(render(path) for path in paths))))
+
+
+def sort_paths_in_place_by_length_before_alphabet(paths):
+    paths.sort(key=lambda p: render(p).lower())
+    paths.sort(key=lambda p: len(p))
+    return paths
 
 def day_12(use_toy_data=False, verbose=False):
     data = toy_input if use_toy_data else input
