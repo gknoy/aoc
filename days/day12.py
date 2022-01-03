@@ -89,11 +89,6 @@ def find_paths(caves, paths, is_valid):
         return caves[path[-1]]
 
     next_paths = {cons(path, edge) for path in paths for edge in last_cave(path).edges}
-
-    print(">>> path candidates:")
-    from pprint import pprint;
-    pprint(tuple(sorted(render(path) for path in next_paths)))
-
     valid_paths = {path for path in next_paths if is_valid(path)}
 
     return valid_paths | find_paths(
@@ -152,7 +147,7 @@ def part_2(input, verbose=False):
         # You can have TWO of ONE small cave, but rest must be only one
         small_caves = [node for node in path if is_small(node)]
         counter = Counter(small_caves)
-        counter2 = Counter(counter.values()) # how many we visited more than once
+        counter2 = Counter(counter.values())  # how many we visited more than once
 
         most_visit_counts = max(counter2.keys())
         only_one_duplicate = 1 >= counter2.get(2, 0)
@@ -171,7 +166,8 @@ def part_2(input, verbose=False):
             path[0] == "start"  # note that 'start' counts as a small cave
             and "start" not in path[1:]  # start not repeated
             and "end" not in path[:-1]  # end not repeated
-            and most_visit_counts <= 2  # don't visit the same small cave more than twice
+            and most_visit_counts
+            <= 2  # don't visit the same small cave more than twice
             and only_one_duplicate  # don't visit more than one small cave multiple times
         )
 
@@ -181,9 +177,6 @@ def part_2(input, verbose=False):
     complete_paths = {path for path in all_paths if is_complete(path)}
 
     if verbose:
-        # print(">>> all paths")
-        # pprint(all_paths)
-
         print(">>> complete paths")
         pretty_print_sorted_paths(complete_paths)
 
@@ -191,11 +184,8 @@ def part_2(input, verbose=False):
 
 
 def pretty_print_sorted_paths(paths):
-    from pprint import pprint
-
     paths = list(paths)
     sort_paths_in_place_by_length_before_alphabet(paths)
-    # print(tuple(render(path) for path in paths))
     print("\n".join((tuple(render(path) for path in paths))))
 
 
@@ -203,6 +193,7 @@ def sort_paths_in_place_by_length_before_alphabet(paths):
     paths.sort(key=lambda p: render(p).lower())
     paths.sort(key=lambda p: len(p))
     return paths
+
 
 def day_12(use_toy_data=False, verbose=False):
     data = toy_input if use_toy_data else input
