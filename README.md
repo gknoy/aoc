@@ -28,6 +28,7 @@ test suite.
 
 ```python
 pytest .
+pyright .
 ```
 
 ### Scaffolding a new day's solution

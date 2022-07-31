@@ -42,7 +42,7 @@ class NicerGrid:
             (row, col) for row in range(self.n_rows) for col in range(self.n_cols)
         ]
 
-    def __getitem__(self, index: Union[int, Coord]):
+    def __getitem__(self, index: Union[int, Coord]) -> int:
         """
         Let is do grid[coord], e.g. grid[(3, 4)] instead of having to deconstruct them all the time
         """
@@ -50,6 +50,7 @@ class NicerGrid:
             return self.data[index]
         if type(index) is tuple and len(index) == 2:
             return self.data[index[0]][index[1]]
+        raise IndexError
 
     def __setitem__(self, index: Union[int, Coord], value):
         """

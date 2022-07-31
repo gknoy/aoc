@@ -91,23 +91,6 @@ def part_1(input, verbose=False):
 # --------------------------
 
 
-def test_coord_manipulations():
-    c = (3, 5)
-    expected = {"up": (2, 5), "down": (4, 5), "left": (3, 4), "right": (3, 6)}
-    vals = {"up": up(c), "down": down(c, 9), "left": left(c), "right": right(c, 9)}
-    assert expected == vals
-
-    c = (9, 9)
-    expected = {"up": (8, 9), "down": c, "left": (9, 8), "right": c}
-    vals = {"up": up(c), "down": down(c, 9), "left": left(c), "right": right(c, 9)}
-    assert expected == vals
-
-    c = (0, 0)
-    expected = {"up": c, "down": (1, 0), "left": c, "right": (0, 1)}
-    vals = {"up": up(c), "down": down(c, 9), "left": left(c), "right": right(c, 9)}
-    assert expected == vals
-
-
 def fill_basin(grid, starting_minimum: Tuple[int, int]) -> Set[Tuple[int, int]]:
     # expand until we are no longer going uphill, or encounter a Nine
     basin = {starting_minimum}
