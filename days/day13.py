@@ -44,8 +44,8 @@ def parse_marks_and_instructions(input: List[str]) -> Tuple[List[List[int]], Lis
             mark_positions.append([row, col])
         if "fold" in line:
             instruction = line.replace("fold along ", "")
-            instruction = instruction.split("=")
-            instructions.append(instruction)
+            axis, index = instruction.split("=")
+            instructions.append([axis, int(index)])
     return mark_positions, instructions
 
 
@@ -79,9 +79,11 @@ class Paper:
         .#.#.  fold_x(2) -> .#|#.  ->  .#
         #....               #.|..      #.
         """
-        print(f">>> fold_x {col}")
-        # left, right = self.partition_x(col)
-        raise Exception(f"fold_x({col}) not implemented")
+        left = np.array([row[:col] for row in self.grid])
+        right = np.array([row[col + 1 :] for row in self.grid])
+        flipped_right = np.flip(right, axis=1)
+        self.rendered = None
+        self.grid = np.array(left | flipped_right)
 
     def fold_y(self, row: int):
         """
@@ -94,7 +96,7 @@ class Paper:
         top = np.array(self.grid[:row])
         # the row'th row is ignored in the fold
         bottom = self.grid[row + 1 :]
-        flipped_bottom = np.array([row for row in reversed(bottom)])
+        flipped_bottom = np.flip(bottom, axis=0)
         self.rendered = None
         self.grid = np.array(top | flipped_bottom)
 
@@ -140,13 +142,19 @@ def part_1(input, verbose=False):
     #     print(">>> marks:")
     #     pprint(marks)
     grid = create_np_grid(marks)
-
     paper = Paper(grid)
+
     if verbose:
-        print(f">>> starting paper:\n{paper.render()}")
+        print(f">>> starting paper:\n{paper}")
 
     axis, index = instructions[0]
-    folded = paper.fold(axis, index)
+    paper.fold(axis, index)
+
+    if verbose:
+        print(f">>> after fold {axis} {index}:\n{paper}")
+
+    n_marks = paper.grid.sum()
+    return n_marks
 
 
 def part_2(input, verbose=False):
