@@ -103,7 +103,12 @@ class Paper:
 
     def __eq__(self, other):
         if type(other) == Paper:
-            return self.grid == other.grid
+            # np.array == np.array generates a comparison array
+            return (
+                len(self.grid) == len(other.grid)
+                and len(self.grid[0]) == len(other.grid[0])
+                and (self.grid == other.grid).all()
+            )
         if type(other) == str:
             return self.render() == other
         return False
