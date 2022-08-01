@@ -43,21 +43,21 @@ def parse_marks_and_instructions(input: List[str]) -> Tuple[List[List[int]], Lis
             # store
             mark_positions.append([row, col])
         if "fold" in line:
-            instruction = line.replace("fold along", "")
+            instruction = line.replace("fold along ", "")
             instruction = instruction.split("=")
             instructions.append(instruction)
     return mark_positions, instructions
 
 
 def create_np_grid(marks: List[List[int]]) -> ArrayLike:
-    # the grid is a grid of booleans, but numpy lets us treat them as zero and 1
+    # A grid of booleans would be more efficiency
     max_rows = 1 + max(mark[1] for mark in marks)
     max_cols = 1 + max(mark[0] for mark in marks)
-    print(f">>> max_rows: {max_rows}")
-    print(f">>> max_cols: {max_cols}")
-    grid = np.zeros([max_rows, max_cols], bool)
+    # print(f">>> max_rows: {max_rows}")
+    # print(f">>> max_cols: {max_cols}")
+    grid = np.zeros([max_rows, max_cols], np.int8)
     for col, row in marks:
-        grid[row][col] = True
+        grid[row][col] = 1
     return grid
 
 
@@ -68,28 +68,38 @@ class Paper:
 
     def fold(self, direction: str, index: int):
         if direction == "x":
-            self.fold_x(index)
+            return self.fold_x(index)
         if direction == "y":
-            self.fold_y(index)
-        raise Exception(f"Invalid direction: {direction}")
+            return self.fold_y(index)
+        raise Exception(f"Invalid direction: >>{direction}<<")
 
-    def fold_x(self, col: int) -> ArrayLike:
+    def fold_x(self, col: int):
         """
-        ..#.               ..|#.      .#
-        .##.  fold_x(2) -> .#|#.  ->  .#
-        #...               #.|..      #.
+        ...#.               ..|#.      .#
+        .#.#.  fold_x(2) -> .#|#.  ->  .#
+        #....               #.|..      #.
         """
-        raise NotImplemented
+        print(f">>> fold_x {col}")
+        # left, right = self.partition_x(col)
+        raise Exception(f"fold_x({col}) not implemented")
 
-    def fold_y(self, row: int) -> ArrayLike:
+    def fold_y(self, row: int):
         """
         ..#.               ..#.      #.#.
         .##.  fold_y(2) -> .##.  ->  ###.
-        #...               ----
+        ....               ----  (line is ignored)
         #...               #...
-                           #...
+        #...               #...
         """
-        raise NotImplemented
+        top = np.array(self.grid[:row])
+        # the row'th row is ignored in the fold
+        bottom = self.grid[row + 1 :]
+        flipped_bottom = np.array([row for row in reversed(bottom)])
+        self.rendered = None
+        self.grid = np.array(top | flipped_bottom)
+
+    def __repr__(self):
+        return self.render()
 
     # --- debugging aids :)
     def render_row(self, grid_row):
@@ -113,6 +123,9 @@ class Paper:
             return self.render() == other
         return False
 
+    def count_marks(self) -> int:
+        return self.grid.sum()
+
     def print(self):
         print(self.render())
 
@@ -123,15 +136,17 @@ def part_1(input, verbose=False):
     instruction on your transparent paper?
     """
     marks, instructions = parse_marks_and_instructions(input)
-    if verbose:
-        print(">>> marks:")
-        pprint(marks)
+    # if verbose:
+    #     print(">>> marks:")
+    #     pprint(marks)
     grid = create_np_grid(marks)
 
     paper = Paper(grid)
     if verbose:
         print(f">>> starting paper:\n{paper.render()}")
-    pass
+
+    axis, index = instructions[0]
+    folded = paper.fold(axis, index)
 
 
 def part_2(input, verbose=False):
@@ -141,3 +156,9 @@ def part_2(input, verbose=False):
 def day_13(use_toy_data=False, verbose=False):
     data = toy_input if use_toy_data else input
     return [part_1(data, verbose), part_2(data, verbose)]
+
+
+# debugging aids
+marks, instructions = parse_marks_and_instructions(toy_input)
+grid = create_np_grid(marks)
+paper = Paper(grid)
