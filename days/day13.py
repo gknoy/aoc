@@ -79,8 +79,8 @@ class Paper:
         .#.#.  fold_x(2) -> .#|#.  ->  .#
         #....               #.|..      #.
         """
-        left = np.array([row[:col] for row in self.grid])
-        right = np.array([row[col + 1 :] for row in self.grid])
+        left = np.array([row[:col] for row in self.grid])  # type: ignore
+        right = np.array([row[col + 1 :] for row in self.grid])  # type: ignore
         flipped_right = np.flip(right, axis=1)
         self.rendered = None
         self.grid = np.array(left | flipped_right)
@@ -93,9 +93,9 @@ class Paper:
         #...               #...
         #...               #...
         """
-        top = np.array(self.grid[:row])
+        top = np.array(self.grid[:row])  # type: ignore
         # the row'th row is ignored in the fold
-        bottom = self.grid[row + 1 :]
+        bottom = self.grid[row + 1 :]  # type: ignore
         flipped_bottom = np.flip(bottom, axis=0)
         self.rendered = None
         self.grid = np.array(top | flipped_bottom)
@@ -110,23 +110,25 @@ class Paper:
     def render(self):
         if self.rendered is not None:
             return self.rendered
-        self.rendered = "\n".join(self.render_row(row) for row in self.grid)
+        self.rendered = "\n".join(
+            self.render_row(row) for row in self.grid  # type: ignore
+        )
         return self.rendered
 
     def __eq__(self, other):
         if type(other) == Paper:
             # np.array == np.array generates a comparison array
             return (
-                len(self.grid) == len(other.grid)
-                and len(self.grid[0]) == len(other.grid[0])
-                and (self.grid == other.grid).all()
+                len(self.grid) == len(other.grid)  # type: ignore
+                and len(self.grid[0]) == len(other.grid[0])  # type: ignore
+                and (self.grid == other.grid).all()  # type: ignore
             )
         if type(other) == str:
             return self.render() == other
         return False
 
     def count_marks(self) -> int:
-        return self.grid.sum()
+        return self.grid.sum()  # type: ignore
 
     def print(self):
         print(self.render())
@@ -144,21 +146,45 @@ def part_1(input, verbose=False):
     grid = create_np_grid(marks)
     paper = Paper(grid)
 
-    if verbose:
-        print(f">>> starting paper:\n{paper}")
-
     axis, index = instructions[0]
     paper.fold(axis, index)
 
     if verbose:
         print(f">>> after fold {axis} {index}:\n{paper}")
 
-    n_marks = paper.grid.sum()
+    n_marks = paper.grid.sum()  # type: ignore
     return n_marks
 
 
 def part_2(input, verbose=False):
-    pass
+    marks, instructions = parse_marks_and_instructions(input)
+    # if verbose:
+    #     print(">>> marks:")
+    #     pprint(marks)
+    grid = create_np_grid(marks)
+    paper = Paper(grid)
+
+    for instruction in instructions:
+        paper.fold(*instruction)
+
+    if verbose:
+        print(f"Folded paper:\n{paper}")
+
+    # Since Advent is a browser game, I can just print mine and read it
+    # with the mark 1 eyeball.
+    # However, this is super frustrating because I'm not using code to find
+    # the letters in the folded paper.
+    #
+    # Example: it'd be nice to recognize letters in this:
+    #
+    #   .##..###..####.#....###..####.####.#....
+    #   #..#.#..#....#.#....#..#.#.......#.#....
+    #   #....#..#...#..#....#..#.###....#..#....
+    #   #....###...#...#....###..#.....#...#....
+    #   #..#.#....#....#....#....#....#....#....
+    #   .##..#....####.####.#....#....####.####.
+    #
+    return "CPZLPFZL"  # FIXME
 
 
 def day_13(use_toy_data=False, verbose=False):
@@ -167,6 +193,6 @@ def day_13(use_toy_data=False, verbose=False):
 
 
 # debugging aids
-marks, instructions = parse_marks_and_instructions(toy_input)
+marks, instructions = parse_marks_and_instructions(input)
 grid = create_np_grid(marks)
 paper = Paper(grid)
