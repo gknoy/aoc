@@ -1,7 +1,7 @@
 """
 # https://adventofcode.com/2021/day/8
 """
-from utils import two_d_array_from_digt_strings, digits_to_int, get_line_items
+from utils import two_d_array_from_digit_strings, digits_to_int, get_line_items
 
 
 input = list(get_line_items("input/08.txt"))

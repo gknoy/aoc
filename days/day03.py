@@ -4,7 +4,7 @@
 # https://adventofcode.com/2021/day/3
 """
 from utils import (
-    two_d_array_from_digt_strings,
+    two_d_array_from_digit_strings,
     digits_to_int,
     get_line_items,
     vertical_slice,
@@ -49,7 +49,7 @@ def invert_bits(gamma_digits):
 
 def part_1(data, verbose=False):
     # power consumption
-    digits = two_d_array_from_digt_strings(data)
+    digits = two_d_array_from_digit_strings(data)
 
     gamma_digits = calc_gamma_digits(digits)
     epsilon_digits = invert_bits(gamma_digits)
@@ -75,7 +75,7 @@ def filter_data_by_column_value_freq(data, col, most_frequent=True):
 
 def part_2(data, verbose=False):
     # life support rating
-    digits = two_d_array_from_digt_strings(data)
+    digits = two_d_array_from_digit_strings(data)
 
     item_len = len(digits[0])
 

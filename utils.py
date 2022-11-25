@@ -31,7 +31,7 @@ def digits_array(digits_str: str) -> List[int]:
     return list(map(int, digits_str))
 
 
-def two_d_array_from_digt_strings(data: List[str]) -> Grid:
+def two_d_array_from_digit_strings(data: List[str]) -> Grid:
     """
     :param data: A list of strings of digits
     :return: A list of lists of digits

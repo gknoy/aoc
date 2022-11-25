@@ -4,7 +4,7 @@
 """
 from copy import deepcopy
 from typing import List, Set, Tuple, Union
-from utils import Coord, Grid, get_line_items, two_d_array_from_digt_strings, neighbors
+from utils import Coord, Grid, get_line_items, two_d_array_from_digit_strings, neighbors
 from colors import bold, none
 
 input = list(get_line_items("input/11.txt"))
@@ -140,13 +140,13 @@ def part_1(input, verbose=False):
     """
     How many total flashes are there after 100 steps?
     """
-    grid = NicerGrid(two_d_array_from_digt_strings(input))
+    grid = NicerGrid(two_d_array_from_digit_strings(input))
 
     return sum(step(grid, verbose=verbose) for i in range(100))
 
 
 def part_2(input, verbose=False):
-    grid = NicerGrid(two_d_array_from_digt_strings(input))
+    grid = NicerGrid(two_d_array_from_digit_strings(input))
     grid_size = grid.n_rows * grid.n_cols
 
     step_number = 0

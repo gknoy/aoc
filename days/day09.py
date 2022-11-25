@@ -4,7 +4,7 @@
 from typing import Callable, Dict, Optional, Set, Tuple
 from colors import none, bold, cyan, red, green, blue, magenta, yellow  # type: ignore
 
-from utils import Coord, get_line_items, neighbors, two_d_array_from_digt_strings
+from utils import Coord, get_line_items, neighbors, two_d_array_from_digit_strings
 
 input = list(get_line_items("input/09.txt"))
 toy_input = [
@@ -70,7 +70,7 @@ def find_local_minima(grid):
 
 
 def part_1(input, verbose=False):
-    grid = two_d_array_from_digt_strings(input)
+    grid = two_d_array_from_digit_strings(input)
 
     local_minima = find_local_minima(grid)
 
@@ -160,7 +160,7 @@ def part_2(input, verbose=False):
     8767896789
     9899965678
     """
-    grid = two_d_array_from_digt_strings(input)
+    grid = two_d_array_from_digit_strings(input)
 
     if verbose:
         print("--- Day 9 Part 2 ---")
