@@ -1,8 +1,11 @@
 """
 # https://adventofcode.com/2021/day/15
 """
-from typing import List, Tuple
-from utils import get_line_items, Grid, Coord
+from math import inf
+from typing import List
+from collections import Counter
+from utils import get_line_items, Grid, Coord, neighbors, two_d_array_from_digit_strings
+
 # import numpy as np
 # from numpy.typing import ArrayLike, NDArray
 
@@ -20,12 +23,12 @@ toy_input: List[str] = [
     "1293138521",
     "2311944581",
 ]
-# super-toy data while figuring out things
-toy_data = [
-    "1163", # "1163"
-    "1381", # "1..."  => total risk is 11
-    "2136", # "2136"
-]
+# # # super-toy data while figuring out things
+# toy_input = [
+#     "1163", # "1..."
+#     "1381", # "1..."  => total risk is 13 (ignore start pos)
+#     "2136", # "2136"
+# ]
 
 
 # --------------------
@@ -45,14 +48,6 @@ toy_data = [
 #   - A* terminates when the path it chooses to extend is a path from start to goal
 #     or if there are no paths eligible to be extended.
 # --------------------
-
-
-def build_grid_of_risks(input: List[str]) -> List[List[int]]:
-    # n_rows = len(input)
-    # n_cols = len(input[0])
-    # grid = np.zeros([n_rows, n_cols], np.int8)
-    grid = [[int(col) for col in row] for row in input]
-    return grid
 
 
 class NodeIterator:
@@ -77,17 +72,99 @@ class Node:
         self.prev = prev
         # cost to enter this node (not total cost)
         self.cost = 0 if prev is None else cost
+        self.path_cost = self.cost
+        if prev is not None:
+            self.path_cost += prev.path_cost
+
+    # def __hash__(self):
+    #     return hash(self.coords)
+    #
+    # def __eq__(self, other):
+    #     return self.coords == other.coords
 
     def __iter__(self):
         return NodeIterator(self)
 
-    def path_cost(self):
-        return sum([node.cost for node in iter(self)])
+    def __repr__(self):
+        return f"<{self.coords}: {self.path_cost}>"
 
 
-def neighbors(node, grid: Grid):
-    # TODO
-    pass
+def a_star(start: Coord, goal: Coord, grid: Grid, verbose=False, max_iter=60000) -> Node:
+    #   Maintain a set of candidate nodes that we've visited.
+    #   - Pick the one(s) with the lowest f(n) = g(n) + h(n)
+    #       g(n): distance/cost so far
+    #       h(n): heuristic of cost to goal (e.g. manhattan distance for grid)
+    #   - A* terminates when the path it chooses to extend is a path from start to goal
+    #     or if there are no paths eligible to be extended.
+    start_node = Node(coords=start, cost=0, prev=None)
+    max_row = len(grid) - 1
+    max_col = len(grid[0]) - 1
+
+    # we'd normally store these in a set, but i want to be able to see
+    # the previous cheapest path to a node and compare vs a new one
+    candidates = {start: start_node}
+    visited = set()
+
+    def _grid(coords):
+        row, col = coords
+        return grid[row][col]
+
+    def g(node):
+        return node.path_cost
+
+    def h(node):
+        # manhattan distance
+        # this guarantees best cost since it'll be <= the real cost
+        return (goal[0] - node.coords[0]) + (goal[1] - node.coords[1])
+
+    def f(node):
+        return g(node) + h(node)
+
+    def pick(candidates):
+        # FIXME: We often have ~1000 candidates.
+        #   This means that sorting is stupid, all I need to track is the
+        #   minimum cost + node
+        best_f = inf
+        best = None
+        for coords, node in candidates.items():
+            fn = f(node)
+            if fn < best_f:
+                best_f = fn
+                best = node
+        return best
+
+    current = start_node
+    iteration = 0
+    while candidates and current.coords != goal:
+        if iteration > max_iter:
+            raise StopIteration
+        if verbose:
+            print(
+                f">>> iteration {iteration:>5} "
+                f"n_candidates: {len(candidates)} "
+                f"visited {len(visited)} best: {current.path_cost} f(best): {f(current)}"
+            )
+
+        iteration += 1
+        current = pick(candidates)
+        visited.add(current.coords)
+        if current.coords == goal:
+            return current
+
+        del candidates[current.coords]
+        for coords in neighbors(
+            current.coords, max_row, max_col, include_diagonals=False
+        ):
+            new_node = Node(coords, _grid(coords), current)
+            if coords not in visited:
+                if coords in candidates:
+                    existing_candidate = candidates[coords]
+                    if new_node.path_cost >= existing_candidate.path_cost:
+                        continue
+                candidates[coords] = new_node
+
+    # if there are no more candidates, then we are done.
+    return current
 
 
 def part_1(input, verbose=False):
@@ -101,15 +178,71 @@ def part_1(input, verbose=False):
     [To] determine the total risk of an entire path, add up the risk levels of
     each position you enter (Start pos is never entered.)
     """
-    grid = build_grid_of_risks(input)
+    grid = two_d_array_from_digit_strings(input)
     start = (0, 0)  # row, col
     goal = (len(grid) - 1, len(grid[0]) - 1)
 
-    pass
+    path_node = a_star(start, goal, grid, verbose=verbose)
+    if verbose:
+        print(f">>> goal: {goal}")
+        print(f">>> path: {[node for node in reversed(list(path_node))]}")
+    return path_node.path_cost
+
+
+def create_tiled_map(grid, n_tiles = 5):
+    # oh heck we should use numpy now ...
+    # FIXME
+    def rollover(n):
+        return n if n <= 9 else n - 9
+
+    def _tile(row, delta):
+        return [
+            rollover(item + delta) for item in row
+        ]
+
+    new_grid = []
+    for tile_row_index in range(n_tiles):
+        for row in grid:
+            extended_row = []
+            for tile_col_index in range(n_tiles):
+                extended_row += _tile(row, tile_col_index + tile_row_index)
+            new_grid.append(extended_row)
+
+    return new_grid
+
+
+def test_create_tiled_map():
+    orig = [[8]]
+    tiled = create_tiled_map(orig, 5)
+    assert tiled == [
+        [8, 9, 1, 2, 3,],
+        [9, 1, 2, 3, 4,],
+        [1, 2, 3, 4, 5,],
+        [2, 3, 4, 5, 6,],
+        [3, 4, 5, 6, 7,],
+    ]
 
 
 def part_2(input, verbose=False):
-    pass
+    """
+    Grid is actually 5x5 tiled from input
+
+    Your original map tile repeats to the right and downward;
+    each time the tile repeats to the right or downward, all of its risk levels
+    are 1 higher than the tile immediately up or left of it
+    Risk levels above 9 wrap back around to 1
+    """
+
+    original_grid = two_d_array_from_digit_strings(input)
+    grid = create_tiled_map(original_grid)
+    start = (0, 0)  # row, col
+    goal = (len(grid) - 1, len(grid[0]) - 1)
+
+    path_node = a_star(start, goal, grid, verbose=verbose, max_iter=160000)
+    if verbose:
+        print(f">>> goal: {goal}")
+        print(f">>> path: {[node for node in reversed(list(path_node))]}")
+    return path_node.path_cost
 
 
 def day_15(use_toy_data=False, verbose=False):
