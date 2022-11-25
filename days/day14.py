@@ -3,6 +3,7 @@
 """
 import pytest
 from collections import Counter, defaultdict
+from math import ceil
 from typing import Dict, List, Tuple
 from utils import get_line_items
 
@@ -291,17 +292,24 @@ def part_1(input, verbose=False, n_iterations=10):
 # when we
 # ----------------------------------------------------
 
+
 def get_pairs(seq):
-    return [
-        seq[index] + seq[index + 1]
-        for index in range(0, len(seq) - 1)
-    ]
+    return [seq[index] + seq[index + 1] for index in range(0, len(seq) - 1)]
 
 
 def get_pair_counts(pairs) -> Dict[str, int]:
     counts = defaultdict(int)
     counts.update(Counter(pairs))
     return counts
+
+
+def get_polymer(seq):
+    """Represent a polymer as counts-of-pairs"""
+    return get_pair_counts(get_pairs(seq))
+
+
+def normalize_counts(polymer):
+    return {pair: count for pair, count in polymer.items() if count > 0}
 
 
 def insert_replacements(polymer: Dict[str, int], rules: Dict[str, str]):
@@ -318,15 +326,78 @@ def insert_replacements(polymer: Dict[str, int], rules: Dict[str, str]):
         polymer[pair] += count
 
 
-def part_2(input, verbose=False, n_iterations=10):
+@pytest.fixture
+def toy_rules():
+    # rules as parsed from toy data
+    return {
+        # fmt: off
+        "BB": "N", "BC": "B", "BH": "H", "BN": "B", "CB": "H",
+        "CC": "N", "CH": "B", "CN": "C", "HB": "C", "HC": "B",
+        "HH": "N", "HN": "C", "NB": "B", "NC": "B", "NH": "C",
+        "NN": "C",
+        # fmt: on
+    }
+
+
+@pytest.mark.parametrize(
+    "polymer,expected",
+    [
+        [
+            get_polymer("NNCB"),
+            get_polymer("NCNBCHB"),
+        ],
+        [
+            get_polymer("NCNBCHB"),
+            get_polymer("NBCCNBBBCBHCB"),
+        ],
+        [
+            get_polymer("NBCCNBBBCBHCB"),
+            get_polymer("NBBBCNCCNBBNBNBBCHBHHBCHB"),
+        ],
+        [
+            get_polymer("NBBBCNCCNBBNBNBBCHBHHBCHB"),
+            get_polymer("NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB"),
+        ],
+    ],
+)
+def test_insert_replacements(polymer, expected, toy_rules):
+    insert_replacements(polymer, toy_rules)
+    assert (
+        normalize_counts(polymer) == expected
+    )  # default dict vs regular dict is still OK
+
+
+def count_chars(polymer):
+    char_counts = defaultdict(int)
+    for pair, count in polymer.items():
+        left, right = list(pair)
+        char_counts[left] += count
+        char_counts[right] += count
+    # Sometimes there are odds here. I'm not sure why this works. ;)
+    return Counter({
+        char: ceil(count/2)
+        for char, count in char_counts.items()
+    })
+
+
+def test_count_chars():
+    polymer = {
+        # fmt: off
+        "NC": 42, "CB": 115, "CN": 102, "NB": 796, "BC": 120, "CH": 21,
+        "HB": 26, "CC": 60, "BB": 812, "BH": 81, "HC": 76,
+        "BN": 735, "HH": 32, "HN": 27, "NH": 27,
+        # fmt: on
+    }
+    assert count_chars(polymer) == {'N': 865, 'C': 298, 'B': 1749, 'H': 161}
+
+
+def part_2(input, verbose=False, n_iterations=40):
     """
     Same as above, but with 40 iterations.
     Each iteration ends up roughly doubling, so we end up with exponentially
-    longer time per iteration if we do it the naive way:
-
-
-    This is FAR too many iterations to be efficient as the string gets longer,
-    especially since we're re-building the string + insertions
+    longer time per iteration if we do it the naive way.
+    Instead of iterating along a representation of the polymer each time,
+    we store counts for things we're doing replacemnts on.
     """
     polymer_chars, rules = parse_input(input)
 
@@ -335,13 +406,10 @@ def part_2(input, verbose=False, n_iterations=10):
 
     for iteration in range(0, n_iterations):
         insert_replacements(polymer, rules)
-        # if verbose:
-        def _pd(polymer):
-            return {k: v for k, v in polymer.items() if v != 0}
-        print(f">>> {iteration:>3} {_pd(polymer)}")
+        if verbose:
+            print(f">>> {iteration:>3} {normalize_counts(polymer)}")
 
-    # FIXME: How to go from pairs to single item counts?
-    counts = Counter(polymer)  # get free sorting ;)
+    counts = count_chars(polymer)
     ordered_counts = counts.most_common()  # ordered high to low
     if verbose:
         print(f"    {counts}")
@@ -355,7 +423,7 @@ def part_2(input, verbose=False, n_iterations=10):
     return most_common - least_common
 
 
-@pytest.mark.parametrize("n_iterations", list(range(1, 15)))
+@pytest.mark.parametrize("n_iterations", list(range(1, 19)))
 def test_same_answers(n_iterations):
     data = toy_input
     assert part_1(data, False, n_iterations) == part_2(data, False, n_iterations)
