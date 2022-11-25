@@ -20,6 +20,7 @@ from days.day11 import day_11
 from days.day12 import day_12
 from days.day13 import day_13
 from days.day14 import day_14
+from days.day15 import day_15
 
 # Harvest from globals() so that I don't need to add both an import
 # AND a key/value pair each day
