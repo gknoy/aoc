@@ -2,7 +2,7 @@
 # https://adventofcode.com/2021/day/15
 """
 from math import inf
-from typing import List
+from typing import Dict, List
 from collections import Counter
 from utils import get_line_items, Grid, Coord, neighbors, two_d_array_from_digit_strings
 
@@ -100,11 +100,6 @@ def a_star(start: Coord, goal: Coord, grid: Grid, verbose=False, max_iter=60000)
     max_row = len(grid) - 1
     max_col = len(grid[0]) - 1
 
-    # we'd normally store these in a set, but i want to be able to see
-    # the previous cheapest path to a node and compare vs a new one
-    candidates = {start: start_node}
-    visited = set()
-
     def _grid(coords):
         row, col = coords
         return grid[row][col]
@@ -120,35 +115,43 @@ def a_star(start: Coord, goal: Coord, grid: Grid, verbose=False, max_iter=60000)
     def f(node):
         return g(node) + h(node)
 
-    def pick(candidates):
+    def pick(candidates: Dict[Coord, Node]):
         # FIXME: We often have ~1000 candidates.
         #   This means that sorting is stupid, all I need to track is the
         #   minimum cost + node
         best_f = inf
         best = None
+        fn, fn, hn = (inf, inf, inf)
         for coords, node in candidates.items():
             fn = f(node)
+            gn = g(node)
+            hn = h(node)
             if fn < best_f:
                 best_f = fn
                 best = node
-        return best
+        return best, fn, gn, hn
 
-    current = start_node
+    # we'd normally store these in a set, but i want to be able to see
+    # the previous cheapest path to a node and compare vs a new one
+    candidates = {start: start_node}
+    visited = set()
+    current = start_node  # we know it's the only one to pick, initially
     iteration = 0
-    while candidates and current.coords != goal:
+    while candidates:
         if iteration > max_iter:
             raise StopIteration
+        current, fn, gn, hn = pick(candidates)
+        visited.add(current.coords)
         if verbose:
             print(
                 f">>> iteration {iteration:>5} "
-                f"n_candidates: {len(candidates)} "
-                f"visited {len(visited)} best: {current.path_cost} f(best): {f(current)}"
+                f"candidates: {len(candidates)} "
+                f"visited {len(visited)} best: {current.path_cost}"
+                f" f(n): {fn} g(n): {gn} h(n): {hn}"
             )
-
-        iteration += 1
-        current = pick(candidates)
-        visited.add(current.coords)
         if current.coords == goal:
+            # we know it has the lowest cost, since we picked it, so it's
+            # our shortest path to goal.
             return current
 
         del candidates[current.coords]
@@ -157,11 +160,14 @@ def a_star(start: Coord, goal: Coord, grid: Grid, verbose=False, max_iter=60000)
         ):
             new_node = Node(coords, _grid(coords), current)
             if coords not in visited:
+                # if we get to a node in a different way, make sure that
+                # this is cheaper to get there than the earlier way we got there.
                 if coords in candidates:
                     existing_candidate = candidates[coords]
                     if new_node.path_cost >= existing_candidate.path_cost:
                         continue
                 candidates[coords] = new_node
+        iteration += 1
 
     # if there are no more candidates, then we are done.
     return current
@@ -231,6 +237,9 @@ def part_2(input, verbose=False):
     each time the tile repeats to the right or downward, all of its risk levels
     are 1 higher than the tile immediately up or left of it
     Risk levels above 9 wrap back around to 1
+
+    >>> iteration 249985 candidates: 9 visited 249986 best: 2922 f(n): 2930 g(n): 2924 h(n): 6
+    >>> goal: (499, 499)
     """
 
     original_grid = two_d_array_from_digit_strings(input)
@@ -238,7 +247,7 @@ def part_2(input, verbose=False):
     start = (0, 0)  # row, col
     goal = (len(grid) - 1, len(grid[0]) - 1)
 
-    path_node = a_star(start, goal, grid, verbose=verbose, max_iter=160000)
+    path_node = a_star(start, goal, grid, verbose=verbose, max_iter=250000)
     if verbose:
         print(f">>> goal: {goal}")
         print(f">>> path: {[node for node in reversed(list(path_node))]}")
