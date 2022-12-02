@@ -4,9 +4,9 @@
 from typing import Callable, Dict, Optional, Set, Tuple
 from colors import none, bold, cyan, red, green, blue, magenta, yellow  # type: ignore
 
-from utils import Coord, get_line_items, neighbors, two_d_array_from_digit_strings
+from utils.utils import Coord, get_line_items, neighbors, two_d_array_from_digit_strings
 
-input = list(get_line_items("input/09.txt"))
+input = list(get_line_items("aoc_2021/input/09.txt"))
 toy_input = [
     # lines input
     "2199943210",

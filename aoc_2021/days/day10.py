@@ -2,9 +2,9 @@
 # https://adventofcode.com/2021/day/10
 """
 from typing import List
-from utils import get_line_items
+from utils.utils import get_line_items
 
-input = list(get_line_items("input/10.txt"))
+input = list(get_line_items("aoc_2021/input/10.txt"))
 toy_input: List[str] = [
     "[({(<(())[]>[[{[]{<()<>>",
     "[(()[<>])]({[<{<<[]>>(",

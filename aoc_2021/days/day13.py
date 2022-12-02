@@ -5,9 +5,9 @@ import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from pprint import pprint
 from typing import Dict, List, Tuple
-from utils import get_line_items
+from utils.utils import get_line_items
 
-input = list(get_line_items("input/13.txt"))
+input = list(get_line_items("aoc_2021/input/13.txt"))
 toy_input: List[str] = [
     # x,y => col, row
     "6,10",

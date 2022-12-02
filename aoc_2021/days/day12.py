@@ -4,9 +4,9 @@
 """
 from collections import Counter
 from typing import Dict, List
-from utils import get_line_items
+from utils.utils import get_line_items
 
-input = list(get_line_items("input/12.txt"))
+input = list(get_line_items("aoc_2021/input/12.txt"))
 toy_input: List[str] = [
     # 10 paths:
     #      start

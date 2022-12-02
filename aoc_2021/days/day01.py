@@ -1,9 +1,9 @@
 """
 # https://adventofcode.com/2021/day/1
 """
-from utils import get_line_items
+from utils.utils import get_line_items
 
-measurements = [int(item) for item in get_line_items("input/01.txt")]
+measurements = [int(item) for item in get_line_items("aoc_2021/input/01.txt")]
 toy_measurements = [199, 200, 208, 210, 200, 207, 240, 269, 260, 263]
 
 

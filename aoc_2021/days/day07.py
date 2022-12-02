@@ -4,9 +4,9 @@
 import pytest
 from statistics import mean, median
 
-from utils import get_line_items, parse_one_line_input
+from utils.utils import get_line_items, parse_one_line_input
 
-input = list(get_line_items("input/07.txt"))
+input = list(get_line_items("aoc_2021/input/07.txt"))
 toy_input = ["16,1,2,0,4,2,7,1,2,14"]
 
 # ---- Part 1: One fuel per move

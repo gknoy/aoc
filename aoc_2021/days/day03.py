@@ -3,7 +3,7 @@
 #
 # https://adventofcode.com/2021/day/3
 """
-from utils import (
+from utils.utils import (
     two_d_array_from_digit_strings,
     digits_to_int,
     get_line_items,
@@ -25,7 +25,7 @@ toy_data = [
     "01010",
 ]
 
-data = [item for item in get_line_items("input/03.txt")]
+data = [item for item in get_line_items("aoc_2021/input/03.txt")]
 
 
 def calc_gamma_digits(digits):
@@ -95,4 +95,4 @@ def part_2(data, verbose=False):
 
 def day_3(use_toy_data=False, verbose=False):
     _data = toy_data if use_toy_data else data
-    return [part_1(data, verbose), part_2(data, verbose)]
+    return [part_1(_data, verbose), part_2(_data, verbose)]

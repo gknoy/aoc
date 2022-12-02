@@ -4,10 +4,16 @@
 """
 from copy import deepcopy
 from typing import List, Set, Tuple, Union
-from utils import Coord, Grid, get_line_items, two_d_array_from_digit_strings, neighbors
+from utils.utils import (
+    Coord,
+    Grid,
+    get_line_items,
+    two_d_array_from_digit_strings,
+    neighbors,
+)
 from colors import bold, none
 
-input = list(get_line_items("input/11.txt"))
+input = list(get_line_items("aoc_2021/input/11.txt"))
 toy_input: List[str] = [
     "5483143223",
     "2745854711",

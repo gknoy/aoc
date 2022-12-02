@@ -4,13 +4,19 @@
 from math import inf
 from typing import Dict, List
 from collections import Counter
-from utils import get_line_items, Grid, Coord, neighbors, two_d_array_from_digit_strings
+from utils.utils import (
+    get_line_items,
+    Grid,
+    Coord,
+    neighbors,
+    two_d_array_from_digit_strings,
+)
 
 # import numpy as np
 # from numpy.typing import ArrayLike, NDArray
 
 
-input = list(get_line_items("input/15.txt"))
+input = list(get_line_items("aoc_2021/input/15.txt"))
 toy_input: List[str] = [
     "1163751742",
     "1381373672",
@@ -89,7 +95,9 @@ class Node:
         return f"<{self.coords}: {self.path_cost}>"
 
 
-def a_star(start: Coord, goal: Coord, grid: Grid, verbose=False, max_iter=60000) -> Node:
+def a_star(
+    start: Coord, goal: Coord, grid: Grid, verbose=False, max_iter=60000
+) -> Node:
     #   Maintain a set of candidate nodes that we've visited.
     #   - Pick the one(s) with the lowest f(n) = g(n) + h(n)
     #       g(n): distance/cost so far
@@ -195,16 +203,14 @@ def part_1(input, verbose=False):
     return path_node.path_cost
 
 
-def create_tiled_map(grid, n_tiles = 5):
+def create_tiled_map(grid, n_tiles=5):
     # oh heck we should use numpy now ...
     # FIXME
     def rollover(n):
         return n if n <= 9 else n - 9
 
     def _tile(row, delta):
-        return [
-            rollover(item + delta) for item in row
-        ]
+        return [rollover(item + delta) for item in row]
 
     new_grid = []
     for tile_row_index in range(n_tiles):
@@ -221,11 +227,11 @@ def test_create_tiled_map():
     orig = [[8]]
     tiled = create_tiled_map(orig, 5)
     assert tiled == [
-        [8, 9, 1, 2, 3,],
-        [9, 1, 2, 3, 4,],
-        [1, 2, 3, 4, 5,],
-        [2, 3, 4, 5, 6,],
-        [3, 4, 5, 6, 7,],
+        [8, 9, 1, 2, 3],
+        [9, 1, 2, 3, 4],
+        [1, 2, 3, 4, 5],
+        [2, 3, 4, 5, 6],
+        [3, 4, 5, 6, 7],
     ]
 
 

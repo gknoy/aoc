@@ -5,9 +5,9 @@ import pytest
 from collections import Counter, defaultdict
 from math import ceil
 from typing import Dict, List, Tuple
-from utils import get_line_items
+from utils.utils import get_line_items
 
-input = list(get_line_items("input/14.txt"))
+input = list(get_line_items("aoc_2021/input/14.txt"))
 toy_input: List[str] = [
     "NNCB",  # starting polymer
     "",
@@ -342,18 +342,9 @@ def toy_rules():
 @pytest.mark.parametrize(
     "polymer,expected",
     [
-        [
-            get_polymer("NNCB"),
-            get_polymer("NCNBCHB"),
-        ],
-        [
-            get_polymer("NCNBCHB"),
-            get_polymer("NBCCNBBBCBHCB"),
-        ],
-        [
-            get_polymer("NBCCNBBBCBHCB"),
-            get_polymer("NBBBCNCCNBBNBNBBCHBHHBCHB"),
-        ],
+        [get_polymer("NNCB"), get_polymer("NCNBCHB")],
+        [get_polymer("NCNBCHB"), get_polymer("NBCCNBBBCBHCB")],
+        [get_polymer("NBCCNBBBCBHCB"), get_polymer("NBBBCNCCNBBNBNBBCHBHHBCHB")],
         [
             get_polymer("NBBBCNCCNBBNBNBBCHBHHBCHB"),
             get_polymer("NBBNBNBBCCNBCNCCNBBNBBNBBBNBBNBBCBHCBHHNHCBBCBHCB"),
@@ -374,10 +365,7 @@ def count_chars(polymer):
         char_counts[left] += count
         char_counts[right] += count
     # Sometimes there are odds here. I'm not sure why this works. ;)
-    return Counter({
-        char: ceil(count/2)
-        for char, count in char_counts.items()
-    })
+    return Counter({char: ceil(count / 2) for char, count in char_counts.items()})
 
 
 def test_count_chars():
@@ -388,7 +376,7 @@ def test_count_chars():
         "BN": 735, "HH": 32, "HN": 27, "NH": 27,
         # fmt: on
     }
-    assert count_chars(polymer) == {'N': 865, 'C': 298, 'B': 1749, 'H': 161}
+    assert count_chars(polymer) == {"N": 865, "C": 298, "B": 1749, "H": 161}
 
 
 def part_2(input, verbose=False, n_iterations=40):

@@ -1,10 +1,10 @@
 """
 # https://adventofcode.com/2021/day/8
 """
-from utils import two_d_array_from_digit_strings, digits_to_int, get_line_items
+from utils.utils import two_d_array_from_digit_strings, digits_to_int, get_line_items
 
 
-input = list(get_line_items("input/08.txt"))
+input = list(get_line_items("aoc_2021/input/08.txt"))
 toy_input = [
     "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb | fdgacbe cefdb cefbgd gcbe",
     "edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec | fcgedb cgb dgebacf gc",

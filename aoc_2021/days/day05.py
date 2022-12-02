@@ -2,9 +2,9 @@
 # https://adventofcode.com/2021/day/5
 """
 import pytest
-from utils import get_line_items
+from utils.utils import get_line_items
 
-input = list(get_line_items("input/05.txt"))
+input = list(get_line_items("aoc_2021/input/05.txt"))
 toy_input = [
     "0,9 -> 5,9",
     "8,0 -> 0,8",
