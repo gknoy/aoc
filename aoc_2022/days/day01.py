@@ -23,38 +23,36 @@ toy_input: List[str] = [
 ]
 
 
+def get_elf_calories(input):
+    elves = []
+    current = []
+    for item in input:
+        if item == "":
+            elves.append(current)
+            current = []
+            continue
+        current.append(int(item))
+    # handle the last item if there is one ;)
+    if len(current):
+        elves.append(current)
+    return elves
+
+
 def part_1(input, verbose=False):
     """
     Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?
     """
-    best = 0
-    current = []
-
-    for item in input:
-        if item == "":
-            current_sum = sum(current)
-            if current_sum > best:
-                best = current_sum
-            if verbose:
-                print(f">>> {best} -- {current_sum} <-- {current}")
-            current = []
-            continue
-        val = int(item)
-        current.append(val)
-
-    # handle the last item if there is one ;)
-    if len(current):
-        current_sum = sum(current)
-        if current_sum > best:
-            best = current_sum
-        if verbose:
-            print(f">>> {best} -- {current_sum} <-- {current}")
-
-    return best
+    elves = get_elf_calories(input)
+    return max([sum(items) for items in elves])
 
 
 def part_2(input, verbose=False):
-    pass
+    """
+    Find the top three Elves carrying the most Calories. How many Calories are those Elves carrying in total?
+    """
+    elves = get_elf_calories(input)
+    sorted_elves = list(sorted(elves, reverse=True, key=lambda elf_cals: sum(elf_cals)))
+    return sum([sum(elf) for elf in sorted_elves[:3]])
 
 
 def day_1(use_toy_data=False, verbose=False):

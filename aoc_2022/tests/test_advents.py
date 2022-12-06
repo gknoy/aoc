@@ -17,13 +17,13 @@ class SkipTest:
 
 TOY_EXPECTED = {
     YEAR: {
-        1: [24000, None],
+        1: [24000, 45000],
     },
 }
 
 EXPECTED = {
     YEAR: {
-        1: [70296, None],
+        1: [70296, 205381],
     }
 }
 
