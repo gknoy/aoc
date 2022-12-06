@@ -24,7 +24,33 @@ toy_input: List[str] = [
 
 
 def part_1(input, verbose=False):
-    pass
+    """
+    Find the Elf carrying the most Calories. How many total Calories is that Elf carrying?
+    """
+    best = 0
+    current = []
+
+    for item in input:
+        if item == "":
+            current_sum = sum(current)
+            if current_sum > best:
+                best = current_sum
+            if verbose:
+                print(f">>> {best} -- {current_sum} <-- {current}")
+            current = []
+            continue
+        val = int(item)
+        current.append(val)
+
+    # handle the last item if there is one ;)
+    if len(current):
+        current_sum = sum(current)
+        if current_sum > best:
+            best = current_sum
+        if verbose:
+            print(f">>> {best} -- {current_sum} <-- {current}")
+
+    return best
 
 
 def part_2(input, verbose=False):
