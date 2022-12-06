@@ -7,7 +7,7 @@
 import pytest
 
 from enum import Enum
-from typing import Dict, List, Tuple
+from typing import Callable, Dict, List, Tuple
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2022/input/02.txt"))
@@ -54,9 +54,9 @@ S = Move(MoveType.SCISSORS, beats=MoveType.PAPER, loses_to=MoveType.ROCK)
 
 
 canonical_moves = {
-    "R": R,
-    "P": P,
-    "S": S,
+    MoveType.ROCK: R,
+    MoveType.PAPER: P,
+    MoveType.SCISSORS: S,
 }
 
 
@@ -101,19 +101,26 @@ def test_score(move, opponent, eq, win, lose, points):
     assert points == score(move, opponent)
 
 
-def decode_move(line: str, opp: Dict, enc: Dict, canonical: Dict) -> Tuple[Move, Move]:
+def decode_move(
+    line: str,
+    opponent_move_encoding: Dict[str, Move],
+    move_picker_map: Dict[str, Callable],
+) -> Tuple[Move, Move]:
     # e.g. "B Y"
     a, b = line.split(" ")
-    return (
-        canonical[opp[a]],
-        canonical[enc[b]],
-    )
+    opp_move = opponent_move_encoding[a]
+    my_move = move_picker_map[b](opp_move)
+    return (opp_move, my_move)
 
 
 def get_move_cheatsheet(
-    input: List[str], opp_enc: Dict, move_enc: Dict, canonical: Dict
+    input: List[str],
+    opponent_move_encoding: Dict[str, Move],
+    move_picker_map: Dict[str, Callable],
 ) -> List[Tuple[Move, Move]]:
-    return [decode_move(line, opp_enc, move_enc, canonical) for line in input]
+    return [
+        decode_move(line, opponent_move_encoding, move_picker_map) for line in input
+    ]
 
 
 def part_1(input, verbose=False):
@@ -148,28 +155,42 @@ def part_1(input, verbose=False):
 
     What would your total score be if everything goes exactly according to your strategy guide?
     """
-    opp_enc = {
-        "A": "R",
-        "B": "P",
-        "C": "S",
+    opp_move_encoding = {
+        "A": R,
+        "B": P,
+        "C": S,
     }
     # for part 1, assume X,Y,Z are R,P,S.  I bet in Part 2 we have to figure which is best
-    move_enc = {
-        "X": "R",
-        "Y": "P",
-        "Z": "S",
+    move_pickers = {
+        "X": lambda move: R,
+        "Y": lambda move: P,
+        "Z": lambda move: S,
     }
 
-    cheatsheet = get_move_cheatsheet(input, opp_enc, move_enc, canonical_moves)
-    return sum(
-        score(my_move, opp_move)
-        for opp_move, my_move in cheatsheet
-    )
+    cheatsheet = get_move_cheatsheet(input, opp_move_encoding, move_pickers)
+    return sum(score(my_move, opp_move) for opp_move, my_move in cheatsheet)
 
 
 def part_2(input, verbose=False):
-    """"""
-    pass
+    """
+    X means you need to lose,
+    Y means you need to end the round in a draw, and
+    Z means you need to win. Good luck!"
+    """
+    opp_move_encoding = {
+        "A": R,
+        "B": P,
+        "C": S,
+    }
+    # for part 1, assume X,Y,Z are R,P,S.  I bet in Part 2 we have to figure which is best
+    move_pickers = {
+        "X": lambda opp_move: canonical_moves[opp_move.beats],
+        "Y": lambda opp_move: canonical_moves[opp_move.type],
+        "Z": lambda opp_move: canonical_moves[opp_move.loses_to],
+    }
+
+    cheatsheet = get_move_cheatsheet(input, opp_move_encoding, move_pickers)
+    return sum(score(my_move, opp_move) for opp_move, my_move in cheatsheet)
 
 
 def day_2(use_toy_data=False, verbose=False):
