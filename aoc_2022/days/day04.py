@@ -1,6 +1,7 @@
 """
 # https://adventofcode.com/2022/day/4
 """
+import pytest
 from typing import List
 from utils.utils import get_line_items
 
@@ -25,6 +26,19 @@ class Range:
     def contains(self, other):
         return self.start <= other.start and self.end >= other.end
 
+    def overlaps(self, other):
+        return (
+            # case 1: we are leftward of other
+            # ....567..  5-7
+            # ......789  7-9
+            (self.start <= other.start and self.end >= other.start)
+            or
+            # case 2: we are rightward of other
+            # ......789  7-9
+            # ....567..  5-7
+            (self.start <= other.end and self.end >= other.start)
+        )
+
     def __eq__(self, other):
         return self.start == other.start and self.end == other.end
 
@@ -37,6 +51,23 @@ def parse_pair(line: str) -> List[Range]:
 def test_contains():
     assert Range(2, 9).contains(Range(3, 7))
     assert Range(2, 4).contains(Range(2, 4))
+
+
+@pytest.mark.parametrize(
+    "line,expected",
+    [
+        ["2-4,6-8", False],
+        ["2-3,4-5", False],
+        ["5-7,7-9", True],
+        ["2-8,3-7", True],
+        ["6-6,4-6", True],
+        ["2-6,4-8", True],
+    ],
+)
+def test_overlap(line, expected):
+    a, b = parse_pair(line)
+    assert a.overlaps(b) == expected
+    assert b.overlaps(a) == expected
 
 
 def test_parse_pair():
@@ -52,7 +83,8 @@ def part_1(input, verbose=False):
 
 
 def part_2(input, verbose=False):
-    pass
+    pairs = map(parse_pair, input)
+    return sum([1 if a.overlaps(b) else 0 for a, b in pairs])
 
 
 def day_4(use_toy_data=False, verbose=False):
