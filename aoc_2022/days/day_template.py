@@ -5,7 +5,10 @@ from typing import List
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2022/input/NN.txt"))
-toy_input: List[str] = []
+toy_input: List[str] = [
+    # fmt: off
+    # fmt: on
+]
 
 
 def part_1(input, verbose=False):

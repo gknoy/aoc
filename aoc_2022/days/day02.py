@@ -12,9 +12,11 @@ from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2022/input/02.txt"))
 toy_input: List[str] = [
+    # fmt: off
     "A Y",
     "B X",
     "C Z",
+    # fmt: on
 ]
 
 
@@ -53,11 +55,7 @@ S = Move(MoveType.SCISSORS, beats=MoveType.PAPER, loses_to=MoveType.ROCK)
 # not shotgun ;)
 
 
-canonical_moves = {
-    MoveType.ROCK: R,
-    MoveType.PAPER: P,
-    MoveType.SCISSORS: S,
-}
+canonical_moves = {MoveType.ROCK: R, MoveType.PAPER: P, MoveType.SCISSORS: S}
 
 
 def score(a: Move, b: Move) -> int:
@@ -155,17 +153,9 @@ def part_1(input, verbose=False):
 
     What would your total score be if everything goes exactly according to your strategy guide?
     """
-    opp_move_encoding = {
-        "A": R,
-        "B": P,
-        "C": S,
-    }
+    opp_move_encoding = {"A": R, "B": P, "C": S}
     # for part 1, assume X,Y,Z are R,P,S.  I bet in Part 2 we have to figure which is best
-    move_pickers = {
-        "X": lambda move: R,
-        "Y": lambda move: P,
-        "Z": lambda move: S,
-    }
+    move_pickers = {"X": lambda move: R, "Y": lambda move: P, "Z": lambda move: S}
 
     cheatsheet = get_move_cheatsheet(input, opp_move_encoding, move_pickers)
     return sum(score(my_move, opp_move) for opp_move, my_move in cheatsheet)
@@ -177,12 +167,7 @@ def part_2(input, verbose=False):
     Y means you need to end the round in a draw, and
     Z means you need to win. Good luck!"
     """
-    opp_move_encoding = {
-        "A": R,
-        "B": P,
-        "C": S,
-    }
-    # for part 1, assume X,Y,Z are R,P,S.  I bet in Part 2 we have to figure which is best
+    opp_move_encoding = {"A": R, "B": P, "C": S}
     move_pickers = {
         "X": lambda opp_move: canonical_moves[opp_move.beats],
         "Y": lambda opp_move: canonical_moves[opp_move.type],

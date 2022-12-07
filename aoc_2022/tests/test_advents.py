@@ -15,6 +15,9 @@ class SkipTest:
         self.expected = expected
 
 
+# Disable black formatting of expected values, because
+# with short enough numbers of items it's less convenient to add a new day. :)
+# fmt: off
 TOY_EXPECTED = {
     YEAR: {
         1: [24000, 45000],
@@ -30,6 +33,7 @@ EXPECTED = {
         3: [7831, 2683],
     }
 }
+# fmt: on
 
 
 def _advent(day_index, use_toy_data=False, verbose=False):
