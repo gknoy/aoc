@@ -15,7 +15,8 @@ Grid = List[List[int]]
 def get_line_items(fname) -> Generator[str, Any, None]:
     """Read all the lines from an input file into an array of strings"""
     with open(fname) as f:
-        return (item.strip() for item in f.readlines())
+        # 2022, day 5: rstrip vs strip: don't strip leading whitespace!
+        return (item.rstrip() for item in f.readlines())
 
 
 def parse_one_line_input(input: List[str]) -> List[int]:
