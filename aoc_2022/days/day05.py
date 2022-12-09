@@ -117,6 +117,7 @@ def test_get_stacks_of_boxes():
         # fmt: on
     ]
 
+
 EXPECTED_REAL_STACKS = [
     # fmt: off
     ["R", "N", "F", "V", "L", "J", "S", "M"],
@@ -143,7 +144,9 @@ def test_real_stacks():
     [N] [N] [R] [B] [Z] [R] [T] [T] [M]
     [R] [P] [W] [N] [M] [P] [R] [Q] [L]
      1   2   3   4   5   6   7   8   9
-    """.split("\n")
+    """.split(
+        "\n"
+    )
     assert get_stacks_of_boxes(boxes) == EXPECTED_REAL_STACKS
 
 
@@ -201,6 +204,7 @@ def part_1(input, verbose=False):
 # ------------------------------
 # Part 2
 # ------------------------------
+
 
 def move_n_boxes_at_a_time(stacks, move_order):
     n_boxes = move_order.n_boxes
