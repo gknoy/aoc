@@ -99,12 +99,12 @@ def get_stacks_of_boxes(box_ascii_art: List[str]) -> StackedBoxesType:
     ]
 
 
-def move_one_box_at_a_time(boxes: StackedBoxesType, move_order: MoveOrder) -> None:
+def move_one_box_at_a_time(stacks: StackedBoxesType, move_order: MoveOrder) -> None:
     """
     Manipulate boxes (in place)
     """
     for iteration in range(move_order.n_boxes):
-        boxes[move_order.dest].append(boxes[move_order.source].pop())
+        stacks[move_order.dest].append(stacks[move_order.source].pop())
 
 
 def test_get_stacks_of_boxes():
@@ -202,9 +202,25 @@ def part_1(input, verbose=False):
 # Part 2
 # ------------------------------
 
+def move_n_boxes_at_a_time(stacks, move_order):
+    n_boxes = move_order.n_boxes
+
+    source_end = -1 * n_boxes
+    top_boxes = stacks[move_order.source][source_end:]
+    stacks[move_order.dest].extend(top_boxes)
+    stacks[move_order.source] = stacks[move_order.source][:source_end]
+
 
 def part_2(input, verbose=False):
-    pass
+    boxes, raw_instructions = get_boxes_and_instructions(input)
+    stacks = get_stacks_of_boxes(boxes)
+    orders = [parse_move(instruction) for instruction in raw_instructions]
+
+    for order in orders:
+        move_n_boxes_at_a_time(stacks, order)
+
+    last_in_each_stack = [stack[-1] for stack in stacks if len(stack)]
+    return "".join(last_in_each_stack)
 
 
 def day_5(use_toy_data=False, verbose=False):
