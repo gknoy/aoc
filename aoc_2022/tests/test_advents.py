@@ -25,6 +25,7 @@ TOY_EXPECTED = {
         3: [157, 70],
         4: [2, 4],
         5: ["CMZ", "MCD"],
+        6: [7, None],
     },
 }
 
@@ -35,6 +36,7 @@ EXPECTED = {
         3: [7831, 2683],
         4: [556, 876],
         5: ["QPJPLMNNR", "BQDNWJPVJ"],
+        6: [1816, None],
     }
 }
 # fmt: on
