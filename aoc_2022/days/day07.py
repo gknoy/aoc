@@ -56,7 +56,7 @@ class ParsedItem:
         return False
 
 
-class FSNode:
+class FSNode(ParsedItem):
     """A node in the filesystems"""
 
     def __init__(self, name, parent=None, size=None):
@@ -133,7 +133,7 @@ class DirNode(FSNode):
 class RootDirNode(DirNode):
     """The root directly.  Has no parent / is own parent"""
 
-    def __init__(self, name, parent=None, size=None):
+    def __init__(self, name="/", parent=None, size=None):
         super(RootDirNode, self).__init__(name, parent=parent, size=size)
         self.parent = self
 
@@ -212,15 +212,19 @@ def parse_input(input) -> ParsedItem:
         node = parse_line(line, current_node=current)
         if node.is_cmd():
             node: CmdNode = node
-            if node.is_cd:
+            if node.is_cd():
+                node: CdCommand = node
                 if node.name == "/":
                     current = root
                 elif node.name == "..":
                     current = current.parent
                 continue
             if node.is_ls():
+                # This is exploitable if input does ls but never lists files,
+                # but we assume input isn't trying to exploit, and will
+                # have subsequent lines that show file/dir entries
                 current.children.clear()
-
+    return root
 
 def parse_line(raw_input, current_node=None):
     file_match = FILE_PATTERN.match(raw_input)
@@ -279,6 +283,62 @@ def test_parse_line(line: str, expected: Union[Exception, ParsedItem]):
         if expected.is_fs():
             assert parsed.parent == current
             assert parsed.size == expected.size
+
+
+def test_size():
+    root = RootDirNode()
+    a = DirNode(name="a", parent=root)
+    e = DirNode(name="e", parent=a)
+    e.add_child(FileNode(name="i", size=584, parent=e))
+    a.add_child(e)
+    a.add_child(FileNode(name="f", size=29116, parent=a))
+    a.add_child(FileNode(name="g", size=2557, parent=a))
+    a.add_child(FileNode(name="h.lst", size=62596, parent=a))
+    root.add_child(a)
+    assert e.size == 584
+    assert a.size == e.size + 29116 + 2557 + 62596
+    assert root.size == a.size
+
+def test_parse_input():
+    # - / (dir)
+    #   - a (dir)
+    #     - e (dir)
+    #       - i (file, size=584)
+    #     - f (file, size=29116)
+    #     - g (file, size=2557)
+    #     - h.lst (file, size=62596)
+    #   - b.txt (file, size=14848514)
+    #   - c.dat (file, size=8504156)
+    #   - d (dir)
+    #     - j (file, size=4060174)
+    #     - d.log (file, size=8033020)
+    #     - d.ext (file, size=5626152)
+    #     - k (file, size=7214296)
+
+    root = RootDirNode()
+    a = DirNode(name="a", parent=root)
+    e = DirNode(name="e", parent=a)
+    e.add_child(FileNode(name="i", size=584, parent=e))
+    a.add_child(e)
+    a.add_child(FileNode(name="f", size=29116, parent=a))
+    a.add_child(FileNode(name="g", size=2557, parent=a))
+    a.add_child(FileNode(name="h.lst", size=62596, parent=a))
+    root.add_child(a)
+    root.add_child(FileNode(name="b.txt", size=14848514, parent=root))
+    root.add_child(FileNode(name="c.dat", size=8504156, parent=root))
+    d = DirNode(name="d", parent=root)
+    d.add_child(FileNode(name="j", size=4060174, parent=d))
+    d.add_child(FileNode(name="d.log", size=8033020, parent=d))
+    d.add_child(FileNode(name="d.ext", size=5626152, parent=d))
+    d.add_child(FileNode(name="k", size=7214296, parent=d))
+    root.add_child(d)
+
+    parsed: DirNode = parse_input(toy_input)
+
+    assert root.size == a.size + 14848514 + 8504156 + d.size
+    assert parsed.size == a.size + 14848514 + 8504156 + d.size
+
+    assert parsed == root
 
 
 def part_1(input, verbose=False):
