@@ -71,14 +71,15 @@ class FSNode(ParsedItem):
         # else:
         #     print(
         #         f""">>> __eq__({self}, {other}):
-        #         self.name == other.name  ({self.name == other.name})
+        #         type(self) == type(other) ({type(self) == type(other)})
+        #         and self.name == other.name  ({self.name == other.name})
         #         and self.is_dir() == other.is_dir() ({self.is_dir() == other.is_dir()})
-        #         and self._size == other._size ({self._size == other._size, (self._size, other._size)})
+        #         and self._size == other._size ({self._size == other._size})
         #         and self.children == other.children ({self.children == other.children})
         #     """
         #     )
         return (
-            other is not None
+            type(self) == type(other)
             and self.name == other.name
             and self.is_dir() == other.is_dir()
             and self._size == other._size
@@ -108,9 +109,14 @@ class FSNode(ParsedItem):
     def is_root(self):
         return False
 
-    def render(self, indent: int) -> str:
+    def render(self, indent: int = 2) -> str:
         indent_str = " " * indent
-        return f"{indent_str}- {str(self)}"
+        if self.children:
+            return f"{indent_str}- {str(self)}\n" + "\n".join(
+            [child.render(indent + 2) for child in self.children]
+        )
+        else:
+            return f"{indent_str}- {str(self)}"
 
 
 class DirNode(FSNode):
@@ -166,13 +172,7 @@ class CmdNode(ParsedItem):
         return False
 
     def __eq__(self, other):
-        return (
-            other is not None
-            and self.is_cmd() == other.is_cmd()
-            and self.is_ls() == other.is_ls()
-            and self.is_cd() == other.is_cd()
-            and str(self) == str(other)
-        )
+        return type(self) == type(other) and str(self) == str(other)
 
 
 class CdCommand(CmdNode):
@@ -204,7 +204,7 @@ class LsCommand(CmdNode):
 
 def parse_input(input) -> ParsedItem:
     # a standalone Node, with no children
-    root = DirNode("/")
+    root = RootDirNode("/")
     root.parent = root  # in case some jerk decides to 'cd ..' too many times
     current = root
     # now, for each line, build our tree
@@ -218,13 +218,26 @@ def parse_input(input) -> ParsedItem:
                     current = root
                 elif node.name == "..":
                     current = current.parent
-                continue
+                else:
+                    # we are cd into a subdir of current
+                    cd_targets = [
+                        child
+                        for child in current.children
+                        if child.is_dir() and child.name == node.name
+                    ]
+                    assert 1 == len(cd_targets)
+                    current = cd_targets[0]
             if node.is_ls():
                 # This is exploitable if input does ls but never lists files,
                 # but we assume input isn't trying to exploit, and will
                 # have subsequent lines that show file/dir entries
                 current.children.clear()
+        if node.is_fs():
+            # add directories when we see them, NOT when we cd into them
+            current.add_child(node)
+
     return root
+
 
 def parse_line(raw_input, current_node=None):
     file_match = FILE_PATTERN.match(raw_input)
@@ -295,26 +308,23 @@ def test_size():
     a.add_child(FileNode(name="g", size=2557, parent=a))
     a.add_child(FileNode(name="h.lst", size=62596, parent=a))
     root.add_child(a)
+    root.add_child(FileNode(name="b.txt", size=14848514, parent=root))
+    root.add_child(FileNode(name="c.dat", size=8504156, parent=root))
+    d = DirNode(name="d", parent=root)
+    d.add_child(FileNode(name="j", size=4060174, parent=d))
+    d.add_child(FileNode(name="d.log", size=8033020, parent=d))
+    d.add_child(FileNode(name="d.ext", size=5626152, parent=d))
+    d.add_child(FileNode(name="k", size=7214296, parent=d))
+    root.add_child(d)
     assert e.size == 584
     assert a.size == e.size + 29116 + 2557 + 62596
-    assert root.size == a.size
+    assert d.size == 4060174 + 8033020 + 5626152 + 7214296
+    assert root.size == a.size + 14848514 + 8504156 + d.size
 
-def test_parse_input():
-    # - / (dir)
-    #   - a (dir)
-    #     - e (dir)
-    #       - i (file, size=584)
-    #     - f (file, size=29116)
-    #     - g (file, size=2557)
-    #     - h.lst (file, size=62596)
-    #   - b.txt (file, size=14848514)
-    #   - c.dat (file, size=8504156)
-    #   - d (dir)
-    #     - j (file, size=4060174)
-    #     - d.log (file, size=8033020)
-    #     - d.ext (file, size=5626152)
-    #     - k (file, size=7214296)
 
+@pytest.fixture
+def expected_toy_tree():
+    # Expected root from part 1 problem description
     root = RootDirNode()
     a = DirNode(name="a", parent=root)
     e = DirNode(name="e", parent=a)
@@ -332,13 +342,19 @@ def test_parse_input():
     d.add_child(FileNode(name="d.ext", size=5626152, parent=d))
     d.add_child(FileNode(name="k", size=7214296, parent=d))
     root.add_child(d)
+    return root
 
+
+def test_parse_input(expected_toy_tree):
     parsed: DirNode = parse_input(toy_input)
+    assert parsed.render() == expected_toy_tree.render()
+    assert parsed == expected_toy_tree
 
-    assert root.size == a.size + 14848514 + 8504156 + d.size
-    assert parsed.size == a.size + 14848514 + 8504156 + d.size
 
-    assert parsed == root
+# ----------------------------------------
+# Part 1:   Find all of the directories with a total size of at most 100000,
+#           then calculate the sum of their total sizes.
+# ----------------------------------------
 
 
 def part_1(input, verbose=False):
