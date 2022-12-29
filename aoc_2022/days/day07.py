@@ -1,6 +1,7 @@
 """
 # https://adventofcode.com/2022/day/7
 """
+import functools
 import pytest
 import re
 from typing import List, Union, Iterable
@@ -162,6 +163,10 @@ class FileNode(FSNode):
         raise Exception("Cannot add children to file")
 
 
+def is_dir(node: FSNode) -> bool:
+    return isinstance(node, DirNode)
+
+
 class CmdNode(ParsedItem):
     """
     Commands (change dir, list contents), which are not part of the FS
@@ -228,7 +233,7 @@ def parse_input(input: List[str]) -> RootDirNode:
                     cd_targets = [
                         child
                         for child in current.children
-                        if isinstance(child, DirNode) and child.name == node.name
+                        if is_dir(child) and child.name == node.name
                     ]
                     assert 1 == len(cd_targets)
                     current = cd_targets[0]
@@ -430,6 +435,7 @@ def part_1(input, verbose=False):
     """
     root = parse_input(input)
     if verbose:
+        print(">>> Part 1:")
         print(root.render(2))
     # trigger all size calcs ;)
     root.size
@@ -437,15 +443,68 @@ def part_1(input, verbose=False):
     small_dirs = [
         item
         for item in root.traverse()
-        if item.size <= 100000 and item != root and isinstance(item, DirNode)
+        if item.size <= 100000 and item != root and is_dir(item)
     ]
     if verbose:
-        print(f">>> small dirs: {small_dirs}")
+        print(f"    small dirs: {small_dirs}")
     return sum(item.size for item in small_dirs)
 
 
 def part_2(input, verbose=False):
-    pass
+    """
+    max space is 70000000
+    You need unused space of at least 30000000.
+
+    Directories e and a are both too small;
+    deleting them would not free up enough space.
+    However, directories d and / are both big enough! Between these,
+    choose the smallest: d, increasing unused space by 24933642.
+
+    Find the smallest directory that, if deleted, would free up enough space on
+    the filesystem to run the update. What is the total size of that directory?
+    """
+    max_space = 70000000
+    min_free = 30000000
+
+    #  |....1....2....3....4....5....6....7|
+    #  |-----------------------------------|  max_space
+    #  |                   |xxxxxxxxxxxxxxx|  min_free
+    #  |===========================|.......|  orig_size
+    #  |                           |<----->|  orig_free
+    #  |                   |xxxxxxx|       |  min_deletable_size
+    #
+    # The device is already TOO FULL, so we know that orig_free < min_free (!)
+    # So, we need to find the smallest directory that is >= min_deletable_size
+
+    root = parse_input(input)
+    orig_size = root.size
+    orig_free = max_space - orig_size
+    min_deletable_size = min_free - orig_free
+
+    deletable_dirs = [
+        item
+        for item in root.traverse()
+        if is_dir(item) and item.size >= min_deletable_size
+    ]
+
+    def pick_smaller(a, b):
+        return a if a.size < b.size else b
+
+    smallest_deletable_dir = functools.reduce(pick_smaller, deletable_dirs, deletable_dirs[0])
+
+    if verbose:
+        print(f""">>> Part 2:
+        max_space: {max_space}
+        min_free: {min_free}
+        orig_size: {orig_size}
+        orig_free: {orig_free}
+        deletable_dirs: {deletable_dirs}
+        smallest: {smallest_deletable_dir}
+        smallest_size: {smallest_deletable_dir.size}
+        """)
+        pass
+
+    return smallest_deletable_dir.size
 
 
 def day_7(use_toy_data=False, verbose=False):
