@@ -38,7 +38,7 @@ EXPECTED = {
         4: [556, 876],
         5: ["QPJPLMNNR", "BQDNWJPVJ"],
         6: [1816, 2625],
-        7: [None, None],
+        7: [1844187, None],
     }
 }
 # fmt: on

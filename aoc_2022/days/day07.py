@@ -3,7 +3,7 @@
 """
 import pytest
 import re
-from typing import List, Tuple, Union
+from typing import List, Union, Iterable
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2022/input/07.txt"))
@@ -73,7 +73,6 @@ class FSNode(ParsedItem):
         #         f""">>> __eq__({self}, {other}):
         #         type(self) == type(other) ({type(self) == type(other)})
         #         and self.name == other.name  ({self.name == other.name})
-        #         and self.is_dir() == other.is_dir() ({self.is_dir() == other.is_dir()})
         #         and self._size == other._size ({self._size == other._size})
         #         and self.children == other.children ({self.children == other.children})
         #     """
@@ -81,7 +80,6 @@ class FSNode(ParsedItem):
         return (
             type(self) == type(other)
             and self.name == other.name
-            and self.is_dir() == other.is_dir()
             and self._size == other._size
             and self.children == other.children
             # do NOT look at parent == other.parent, to prevent
@@ -103,9 +101,6 @@ class FSNode(ParsedItem):
             self._size += child.size
         return self._size
 
-    def is_dir(self):
-        return False
-
     def is_root(self):
         return False
 
@@ -113,8 +108,8 @@ class FSNode(ParsedItem):
         indent_str = " " * indent
         if self.children:
             return f"{indent_str}- {str(self)}\n" + "\n".join(
-            [child.render(indent + 2) for child in self.children]
-        )
+                [child.render(indent + 2) for child in self.children]
+            )
         else:
             return f"{indent_str}- {str(self)}"
 
@@ -125,15 +120,25 @@ class DirNode(FSNode):
     def __repr__(self):
         return f"{self.name} (dir)"
 
-    def is_dir(self):
-        return True
-
     def is_root(self):
         return False
 
     def add_child(self, child):
         self._size = None  # reset size calcs
         self.children.append(child)
+
+    def traverse(self) -> Iterable:
+        """
+        depth-first search of nodes
+        """
+        yield self
+        for child in self.children:
+            if isinstance(child, DirNode):
+                for node in child.traverse():
+                    yield node
+            else:
+                # only dir nodes have traverse()
+                yield child
 
 
 class RootDirNode(DirNode):
@@ -202,7 +207,7 @@ class LsCommand(CmdNode):
 # ----------------------------------------
 
 
-def parse_input(input) -> ParsedItem:
+def parse_input(input: List[str]) -> RootDirNode:
     # a standalone Node, with no children
     root = RootDirNode("/")
     root.parent = root  # in case some jerk decides to 'cd ..' too many times
@@ -223,7 +228,7 @@ def parse_input(input) -> ParsedItem:
                     cd_targets = [
                         child
                         for child in current.children
-                        if child.is_dir() and child.name == node.name
+                        if isinstance(child, DirNode) and child.name == node.name
                     ]
                     assert 1 == len(cd_targets)
                     current = cd_targets[0]
@@ -239,7 +244,7 @@ def parse_input(input) -> ParsedItem:
     return root
 
 
-def parse_line(raw_input, current_node=None):
+def parse_line(raw_input: str, current_node=None) -> ParsedItem:
     file_match = FILE_PATTERN.match(raw_input)
     if file_match:
         size, name = file_match.groups()
@@ -346,9 +351,31 @@ def expected_toy_tree():
 
 
 def test_parse_input(expected_toy_tree):
-    parsed: DirNode = parse_input(toy_input)
+    parsed = parse_input(toy_input)
     assert parsed.render() == expected_toy_tree.render()
     assert parsed == expected_toy_tree
+
+
+def test_traverse(expected_toy_tree):
+    items = list(expected_toy_tree.traverse())
+    for item in items:
+        assert isinstance(item, FSNode)
+    assert [item.name for item in items] == [
+        "/",
+        "a",
+        "e",
+        "i",
+        "f",
+        "g",
+        "h.lst",
+        "b.txt",
+        "c.dat",
+        "d",
+        "j",
+        "d.log",
+        "d.ext",
+        "k",
+    ]
 
 
 # ----------------------------------------
@@ -401,7 +428,20 @@ def part_1(input, verbose=False):
          157 ..
 
     """
-    pass
+    root = parse_input(input)
+    if verbose:
+        print(root.render(2))
+    # trigger all size calcs ;)
+    root.size
+
+    small_dirs = [
+        item
+        for item in root.traverse()
+        if item.size <= 100000 and item != root and isinstance(item, DirNode)
+    ]
+    if verbose:
+        print(f">>> small dirs: {small_dirs}")
+    return sum(item.size for item in small_dirs)
 
 
 def part_2(input, verbose=False):
