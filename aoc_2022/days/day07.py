@@ -490,10 +490,13 @@ def part_2(input, verbose=False):
     def pick_smaller(a, b):
         return a if a.size < b.size else b
 
-    smallest_deletable_dir = functools.reduce(pick_smaller, deletable_dirs, deletable_dirs[0])
+    smallest_deletable_dir = functools.reduce(
+        pick_smaller, deletable_dirs, deletable_dirs[0]
+    )
 
     if verbose:
-        print(f""">>> Part 2:
+        print(
+            f""">>> Part 2:
         max_space: {max_space}
         min_free: {min_free}
         orig_size: {orig_size}
@@ -501,7 +504,8 @@ def part_2(input, verbose=False):
         deletable_dirs: {deletable_dirs}
         smallest: {smallest_deletable_dir}
         smallest_size: {smallest_deletable_dir.size}
-        """)
+        """
+        )
         pass
 
     return smallest_deletable_dir.size
