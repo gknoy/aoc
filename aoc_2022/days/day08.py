@@ -81,7 +81,7 @@ def build_vis_grid_rows(grid: Grid) -> VisGrid:
 def set_vis_grid_cols(grid: Grid, vis_grid: VisGrid):
     n_cols = len(grid[0])
     # first and last cols are already visible from the row calcs:
-    for col_index in range(1, n_cols - 2):
+    for col_index in range(1, n_cols - 1):
         vis_col: VisRow = vertical_slice(grid, col_index)
         for row, visible in enumerate(calc_visibility_row(vis_col)):
             if visible:
