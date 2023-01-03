@@ -2,12 +2,19 @@
 # https://adventofcode.com/2022/day/8
 """
 import pytest
-from typing import List
+from functools import reduce
+from typing import Callable, List
 from utils.utils import (
     get_line_items,
     two_d_array_from_digit_strings,
     vertical_slice,
+    grid_at,
+    Coord,
     Grid,
+    up,
+    down,
+    left,
+    right,
 )
 
 input = list(get_line_items("aoc_2022/input/08.txt"))
@@ -145,8 +152,78 @@ def part_1(input, verbose=False):
     return n_visible
 
 
+# ----------------------------
+# Viewing Distance
+# ----------------------------
+
+
+def view_distance(
+    coord: Coord, grid: Grid, direction: Callable, max_or_min_in_direction: int
+) -> int:
+    # if we are on an edge
+    count = 0
+    height = grid_at(grid, coord)
+    prev_coord = coord
+    next_coord = direction(coord, max_or_min_in_direction)
+    # print(f">>> view_distance({coord}, {direction})")
+    while next_coord != prev_coord:
+        # print(f"    next: {next_coord}")
+        # we are not on an edge, so we can see at least one tree:
+        count += 1
+        if grid_at(grid, next_coord) >= height:
+            return count
+        prev_coord = next_coord
+        next_coord = direction(
+            next_coord, max_or_min_in_direction
+        )  # keep going in same direction
+    # if we reach the edge, then we're done in this direction
+    return count
+
+
+def calc_view_distances(coord: Coord, grid: Grid) -> List[int]:
+    max_col = len(grid) - 1
+    max_row = len(grid[0]) - 1
+    return [
+        view_distance(coord, grid, up, 0),
+        view_distance(coord, grid, down, max_row),
+        view_distance(coord, grid, left, 0),
+        view_distance(coord, grid, right, max_col),
+    ]
+
+
+def scenic_score(distances: List[int]) -> int:
+    return reduce(lambda a, b: a * b, distances)
+
+
+# ----------------------------
+# Tests
+# ----------------------------
+
+
+@pytest.mark.parametrize("coord,expected", [[(1, 2), 4], [(3, 2), 8]])
+def test_score(coord: Coord, expected: int, toy_grid):
+    distances = calc_view_distances(coord, toy_grid)
+    assert scenic_score(distances) == expected
+
+
 def part_2(input, verbose=False):
-    pass
+    """
+    Consider each tree on your map. What is the highest scenic score possible for any tree?
+
+    Viewing distance:
+        stop if you reach an edge
+        or at the first tree that is the same height or taller than the tree under consideration.
+    Scenic score: multiply viewing distance in each direction
+    """
+    grid = two_d_array_from_digit_strings(input)
+    max_score = 0
+    for row in range(len(grid)):
+        for col in range(len(grid[0])):
+            coord = (row, col)
+            score = scenic_score(calc_view_distances(coord, grid))
+            if score > max_score:
+                max_score = score
+    return max_score
 
 
 def day_8(use_toy_data=False, verbose=False):

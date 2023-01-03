@@ -8,7 +8,7 @@ CLEAR = "\033[0m"
 
 
 # custom type
-Coord = Tuple[int, int]
+Coord = Tuple[int, int]  # row, column
 Grid = List[List[int]]
 
 
@@ -65,6 +65,10 @@ def left(coord: Coord, min_col=0) -> Coord:
 
 def right(coord: Coord, max_col) -> Coord:
     return (coord[0], min(max_col, coord[1] + 1))
+
+
+def grid_at(grid: Grid, coord: Coord) -> Any:
+    return grid[coord[0]][coord[1]]
 
 
 def neighbors(coord: Coord, max_row, max_col, include_diagonals=True) -> Set[Coord]:
