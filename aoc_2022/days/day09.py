@@ -404,6 +404,10 @@ def part_1(input, verbose=False):
     return len(visited)
 
 
+def test_part_1():
+    assert part_1(toy_input) == 13
+
+
 def part_2(input, verbose=False):
     pass
 
