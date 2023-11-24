@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
 import functools
+import pytest
 
 from utils.utils import get_line_items
 
@@ -152,9 +153,175 @@ def test_parse_input():
     ]
 
 
+# --------
+# Part 1: Simple rope movement
+# --------
+
+
+@dataclass
+class Position:
+    x: int = 0
+    y: int = 0
+
+    def is_adjacent(self, pos: "Position") -> bool:
+        return abs(self.x - pos.x) <= 1 and abs(self.y - pos.y) <= 1
+
+    def coords(self) -> tuple:
+        return (self.x, self.y)
+
+    def __add__(self, other):
+        return Position(self.x + other.x, self.y + other.y)
+
+    def __sub__(self, other):
+        return Position(self.x - other.x, self.y - other.y)
+
+    # TODO: move this to Rope class since it bakes in assumptions about ropes?
+    def rope_distance(self, pos: "Position") -> int:
+        """
+        The rope-distace between two positions
+        This is NOT the same as manhattan distance, as rope can go diagonally.
+
+        o-o         dx = 3   len = 3      ==  o-o-o-o
+           -o-o     dy = 1                    o-o-o
+                                                   -o
+
+        o           dx = 2   len = 2
+         -o         dy = 2
+           -o
+
+        o           dx = 3   len = 4
+         -o         dy = 4
+           -o
+             -o
+              o
+        """
+        dx = abs(self.x - pos.x)
+        dy = abs(self.y - pos.y)
+        return max(dx, dy)
+
+
+@pytest.mark.parametrize(
+    "a, b, expected",
+    [
+        # same-axis movement only
+        [Position(0, 0), Position(2, 0), 2],
+        # only diagonal
+        [Position(0, 0), Position(2, 2), 2],
+        [Position(0, 0), Position(-2, -2), 2],
+        # examples from rope_distance docstring
+        [Position(0, 0), Position(3, 1), 3],  # 1 diagonal
+        [Position(0, 0), Position(3, 4), 4],  # 4 diagonals
+    ],
+)
+def test_rope_distance(a, b, expected):
+    assert a.rope_distance(b) == expected
+    assert b.rope_distance(a) == expected
+
+
+@dataclass
+class Rope_v1:
+    """Simplistic rope movement"""
+
+    head: Position
+    tail: Position
+    max_length: int = 1
+
+    def __len__(self):
+        return self.head.rope_distance(self.tail)
+
+    def __str__(self):
+        return f"({self.x}, {self.y})"
+
+    # GK: I think I need this when trying to move the tail of the rope
+    def closest_adjacent_pos(self, tail: "Position", head: "Position") -> "Position":
+        """
+        Find the next closest space to another position, e.g. after
+        the head has moved.
+
+        > the tail always moves one step diagonally to keep up
+
+        Examples:
+
+            ..H
+            ..o<-- desired position
+            .T.
+
+            ...
+            T..
+            .oH
+            ^---- desired position
+        """
+        if tail.is_adjacent(head):
+            return tail
+
+        dx = head.x - tail.x
+        dy = head.y - tail.y
+
+        # Because we are _always_ moving on a diagonal,
+        # we don't need to apply logic to pick directions,
+        # a unit vector is enough to tell us what we need.
+        delta = Position(x=int(dx / abs(dx)), y=int(dy / abs(dy)))
+        return tail + delta
+
+
+@pytest.mark.parametrize(
+    "a, b, adjacent",
+    [
+        [Position(2, 2), Position(2, 2), True],
+        # adjacent spaces
+        [Position(2, 2), Position(2, 1), True],
+        [Position(2, 2), Position(2, 3), True],
+        [Position(2, 2), Position(1, 2), True],
+        [Position(2, 2), Position(3, 2), True],
+        # diagonals
+        [Position(2, 2), Position(3, 3), True],
+        [Position(2, 2), Position(1, 3), True],
+        [Position(2, 2), Position(3, 1), True],
+        [Position(2, 2), Position(1, 1), True],
+        # NOT adjacent
+        [Position(2, 2), Position(4, 4), False],
+        [Position(2, 2), Position(2, 4), False],
+        [Position(2, 2), Position(4, 2), False],
+    ],
+)
+def test_pos_is_adjacent(a, b, adjacent):
+    assert a.is_adjacent(b) == adjacent
+    assert b.is_adjacent(a) == adjacent
+
+
+@pytest.mark.parametrize(
+    "a, b, closest",
+    [
+        # overlap
+        [Position(0, 0), Position(0, 0), Position(0, 0)],
+        # adjacent
+        [Position(0, 0), Position(1, 1), Position(0, 0)],
+        # head has moved out of range
+        [Position(0, 0), Position(2, 1), Position(1, 1)],
+        # diagonal movement
+        [Position(0, 0), Position(2, 2), Position(1, 1)],
+    ],
+)
+def test_closest_adjacent_position(a, b, closest):
+    rope = Rope_v1(a, b)
+    assert rope.closest_adjacent_pos(a, b) == closest
+    # this isn't reflexive, as this models behavior of tail (a) of the rope
+
+
 def part_1(input, verbose=False):
     commands = parse_input(input)
     steps = to_steps(commands)
+
+    rope = Rope_v1(head=Position(0, 0), tail=Position(0, 0))
+    visited = set()
+
+    for step in steps:
+        rope.move_head(step)
+        visited.add(rope.tail.coords())
+        if verbose:
+            print(f"  head: {rope.head}  tail: {rope.tail}")
+
+    return len(visited)
 
 
 def part_2(input, verbose=False):
