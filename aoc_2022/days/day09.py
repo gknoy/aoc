@@ -203,6 +203,25 @@ class Position:
         return max(dx, dy)
 
 
+def get_step_position_delta(step: Command) -> Position:
+    # one unit in a step's direction.
+    # Steps are assumed to have a distance of 1
+    direction = step.direction
+    assert step.distance == 1
+    dx, dy = (0, 0)
+    # structural pattern matching requires python 3.10
+    match direction:
+        case Direction.UP:
+            dx, dy = (0, 1)
+        case Direction.DOWN:
+            dx, dy = (0, -1)
+        case Direction.LEFT:
+            dx, dy = (-1, 0)
+        case Direction.RIGHT:
+            dx, dy = (1, 0)
+    return Position(dx, dy)
+
+
 @pytest.mark.parametrize(
     "a, b, expected",
     [
@@ -263,8 +282,16 @@ class Rope_v1:
         # Because we are _always_ moving on a diagonal,
         # we don't need to apply logic to pick directions,
         # a unit vector is enough to tell us what we need.
-        delta = Position(x=int(dx / abs(dx)), y=int(dy / abs(dy)))
+        unit_dx = 0 if dx == 0 else int(dx / abs(dx))  # prevent div by zero ;)
+        unit_dy = 0 if dy == 0 else int(dy / abs(dy))
+        delta = Position(x=unit_dx, y=unit_dy)
         return tail + delta
+
+    def move_head(self, step: Command):
+        delta = get_step_position_delta(step)
+        self.head += delta
+        new_tail_pos = self.closest_adjacent_pos(self.tail, self.head)
+        self.tail = new_tail_pos
 
 
 @pytest.mark.parametrize(
@@ -309,6 +336,56 @@ def test_closest_adjacent_position(a, b, closest):
     rope = Rope_v1(a, b)
     assert rope.closest_adjacent_pos(a, b) == closest
     # this isn't reflexive, as this models behavior of tail (a) of the rope
+
+
+@pytest.mark.parametrize(
+    "name, start_coords, direction, expected_coords",
+    [
+        # fmt:off
+        # Adjacency positions: (tail assumed to be at E)
+        #   A B C
+        #   D E F
+        #   G H I
+        # (All coords are in (head,tail) order)
+        # Case A: head above-left tail
+        ["A", [(-1, 1), (0, 0)], Direction.UP,    [(-1, 2), (-1, 1)]],
+        ["A", [(-1, 1), (0, 0)], Direction.DOWN,  [(-1, 0), (0, 0)]],
+        ["A", [(-1, 1), (0, 0)], Direction.LEFT,  [(-2, 1), (-1, 1)]],
+        ["A", [(-1, 1), (0, 0)], Direction.RIGHT, [(0, 1), (0, 0)]],
+        # Case B: head above tail
+        # Case C: head above-right tail
+        ["C", [(1, 1), (0, 0)], Direction.UP,    [(1, 2), (1, 1)]],
+        ["C", [(1, 1), (0, 0)], Direction.DOWN,  [(1, 0), (0, 0)]],
+        ["C", [(1, 1), (0, 0)], Direction.LEFT,  [(0, 1), (0, 0)]],
+        ["C", [(1, 1), (0, 0)], Direction.RIGHT, [(2, 1), (1, 1)]],
+        # Case D: head left of tail
+        # Case E: head overlaps tail
+        ["E", [(0, 0), (0, 0)], Direction.UP,    [(0, 1),  (0, 0)]],
+        ["E", [(0, 0), (0, 0)], Direction.DOWN,  [(0, -1), (0, 0)]],
+        ["E", [(0, 0), (0, 0)], Direction.LEFT,  [(-1, 0), (0, 0)]],
+        ["E", [(0, 0), (0, 0)], Direction.RIGHT, [(1, 0),  (0, 0)]],
+        # Case F: head right of tail
+        ["F", [(1, 0), (0, 0)], Direction.UP,    [(1, 1), (0, 0)]],
+        ["F", [(1, 0), (0, 0)], Direction.DOWN,  [(1, -1), (0, 0)]],
+        ["F", [(1, 0), (0, 0)], Direction.LEFT,  [(0, 0), (0, 0)]],
+        ["F", [(1, 0), (0, 0)], Direction.RIGHT, [(2, 0), (1, 0)]],
+        # Case G: head bottom-left of tail
+        # Case H: head below tail
+        # Case I: head
+        # fmt:on
+    ],
+)
+def test_rope_v1_move_head(name, start_coords, direction, expected_coords):
+    # name unused except for differentiating pytest runs ;)
+    head, tail = [Position(*coords) for coords in start_coords]
+    exp_head, exp_tail = [Position(*coords) for coords in expected_coords]
+    rope = Rope_v1(head, tail)
+    assert rope.head == head
+    assert rope.tail == tail
+    step = Command(direction=direction, distance=1)
+    rope.move_head(step)
+    assert rope.head == exp_head, "unexpected head location"
+    assert rope.tail == exp_tail, "unexpected tail location"
 
 
 def part_1(input, verbose=False):
