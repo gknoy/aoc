@@ -58,17 +58,24 @@ toy_input: list[str] = [
 
 
 class Direction(Enum):
-    U = "U"
-    D = "D"
-    R = "R"
-    L = "L"
+    UP = "UP"
+    DOWN = "DOWN"
+    RIGHT = "RIGHT"
+    LEFT = "LEFT"
 
-
-# convenience accessors
-UP = Direction.U
-DOWN = Direction.D
-RIGHT = Direction.R
-LEFT = Direction.L
+    @classmethod
+    @functools.cache
+    def parse(cls, s: str) -> "Direction":
+        match s:
+            case "U":
+                return cls.UP
+            case "D":
+                return cls.DOWN
+            case "R":
+                return cls.RIGHT
+            case "L":
+                return cls.LEFT
+        raise IndexError
 
 
 @dataclass
@@ -96,42 +103,37 @@ def to_steps(commands: list[Command]) -> list[Command]:
 
 
 def test_command_equality():
-    a = Command(UP, 3)
-    b = Command(UP, 3)
+    a = Command(Direction.UP, 3)
+    b = Command(Direction.UP, 3)
     assert a == b
 
 
 def test_command_to_steps():
-    c = Command(direction=RIGHT, distance=4)
+    c = Command(direction=Direction.RIGHT, distance=4)
     assert c.to_steps() == [
-        Command(direction=RIGHT, distance=1),
-        Command(direction=RIGHT, distance=1),
-        Command(direction=RIGHT, distance=1),
-        Command(direction=RIGHT, distance=1),
+        Command(direction=Direction.RIGHT, distance=1),
+        Command(direction=Direction.RIGHT, distance=1),
+        Command(direction=Direction.RIGHT, distance=1),
+        Command(direction=Direction.RIGHT, distance=1),
     ]
 
 
 def test_to_steps():
-    commands = [Command(RIGHT, 3), Command(UP, 2)]
+    commands = [Command(Direction.RIGHT, 3), Command(Direction.UP, 2)]
     expected = [
-        Command(direction=RIGHT, distance=1),
-        Command(direction=RIGHT, distance=1),
-        Command(direction=RIGHT, distance=1),
-        Command(direction=UP, distance=1),
-        Command(direction=UP, distance=1),
+        Command(direction=Direction.RIGHT, distance=1),
+        Command(direction=Direction.RIGHT, distance=1),
+        Command(direction=Direction.RIGHT, distance=1),
+        Command(direction=Direction.UP, distance=1),
+        Command(direction=Direction.UP, distance=1),
     ]
     assert to_steps(commands) == expected
-
-
-@functools.cache
-def parse_direction(s: str) -> Optional[Direction]:
-    return Direction[s]
 
 
 def parse_command(line: str) -> Command:
     parts = line.split()
     assert len(parts) == 2, f"Could not parse {line}"
-    direction = parse_direction(parts[0])
+    direction = Direction.parse(parts[0])
     distance = int(parts[1])
     return Command(direction, distance)
 
@@ -147,9 +149,9 @@ def parse_input(lines) -> list[Command]:
 
 def test_parse_input():
     assert parse_input(["R 4", "U 4", "L 3"]) == [
-        Command(RIGHT, 4),
-        Command(UP, 4),
-        Command(LEFT, 3),
+        Command(Direction.RIGHT, 4),
+        Command(Direction.UP, 4),
+        Command(Direction.LEFT, 3),
     ]
 
 
@@ -169,6 +171,7 @@ class Position:
     def coords(self) -> tuple:
         return (self.x, self.y)
 
+    # Allow Position to be used as a delta to another position
     def __add__(self, other):
         return Position(self.x + other.x, self.y + other.y)
 
