@@ -5,11 +5,13 @@
 """
 from dataclasses import dataclass
 from enum import Enum
-from typing import List, Optional
+from typing import Optional
+import functools
+
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2022/input/09.txt"))
-toy_input: List[str] = [
+toy_input: list[str] = [
     # fmt: off
     "R 4",
     "U 4",
@@ -55,10 +57,17 @@ toy_input: List[str] = [
 
 
 class Direction(Enum):
-    UP = "U"
-    DOWN = "D"
-    RIGHT = "R"
-    LEFT = "L"
+    U = "U"
+    D = "D"
+    R = "R"
+    L = "L"
+
+
+# convenience accessors
+UP = Direction.U
+DOWN = Direction.D
+RIGHT = Direction.R
+LEFT = Direction.L
 
 
 @dataclass
@@ -69,7 +78,7 @@ class Command:
     def __str__(self):
         return f"({self.direction} {self.distance})"
 
-    def to_steps(self) -> List["Command"]:
+    def to_steps(self) -> list["Command"]:
         """
         Get a list of commands with distance 1
         e.g.  (R 4) -> [(R 1), (R 1), (R 1), (R 1)]
@@ -80,39 +89,48 @@ class Command:
         ]
 
 
+def to_steps(commands: list[Command]) -> list[Command]:
+    """Transform a list of Commands into a list of Commands with distance 1"""
+    return [step for command in commands for step in command.to_steps()]
+
+
 def test_command_equality():
-    a = Command(Direction.UP, 3)
-    b = Command(Direction.UP, 3)
+    a = Command(UP, 3)
+    b = Command(UP, 3)
     assert a == b
 
 
 def test_command_to_steps():
-    c = Command(direction=Direction.RIGHT, distance=4)
+    c = Command(direction=RIGHT, distance=4)
     assert c.to_steps() == [
-        Command(direction=Direction.RIGHT, distance=1),
-        Command(direction=Direction.RIGHT, distance=1),
-        Command(direction=Direction.RIGHT, distance=1),
-        Command(direction=Direction.RIGHT, distance=1),
+        Command(direction=RIGHT, distance=1),
+        Command(direction=RIGHT, distance=1),
+        Command(direction=RIGHT, distance=1),
+        Command(direction=RIGHT, distance=1),
     ]
 
 
-directions_by_abbrev = {
-    "U": Direction.UP,
-    "D": Direction.DOWN,
-    "R": Direction.RIGHT,
-    "L": Direction.LEFT,
-}
+def test_to_steps():
+    commands = [Command(RIGHT, 3), Command(UP, 2)]
+    expected = [
+        Command(direction=RIGHT, distance=1),
+        Command(direction=RIGHT, distance=1),
+        Command(direction=RIGHT, distance=1),
+        Command(direction=UP, distance=1),
+        Command(direction=UP, distance=1),
+    ]
+    assert to_steps(commands) == expected
 
 
+@functools.cache
 def parse_direction(s: str) -> Optional[Direction]:
-    return directions_by_abbrev.get(s)
+    return Direction[s]
 
 
 def parse_command(line: str) -> Command:
     parts = line.split()
     assert len(parts) == 2, f"Could not parse {line}"
     direction = parse_direction(parts[0])
-    assert direction is not None, f"Could not parse direction from {line}"
     distance = int(parts[1])
     return Command(direction, distance)
 
@@ -126,15 +144,17 @@ def parse_input(lines) -> list[Command]:
     ]
 
 
+def test_parse_input():
+    assert parse_input(["R 4", "U 4", "L 3"]) == [
+        Command(RIGHT, 4),
+        Command(UP, 4),
+        Command(LEFT, 3),
+    ]
 
 
 def part_1(input, verbose=False):
     commands = parse_input(input)
-    steps = [
-        step
-        for command in commands
-        for step in command.to_steps()
-    ]
+    steps = to_steps(commands)
 
 
 def part_2(input, verbose=False):
