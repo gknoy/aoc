@@ -1,11 +1,12 @@
 """
 # https://adventofcode.com/2022/day/10
 """
-from typing import List
+import itertools
+from dataclasses import dataclass
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2022/input/10.txt"))
-toy_input: List[str] = [
+toy_input: list[str] = [
     # fmt: off
     "addx 15",
     "addx -11",
@@ -157,8 +158,112 @@ toy_input: List[str] = [
 ]
 
 
+# --------------------------------
+# Part 1
+# --------------------------------
+# - single register computer
+# - `addx V` takes two cycles to complete.
+#               After two cycles, the X register is increased by the value V. (V can be negative.)
+#               In first cycle, no changes
+# - `noop` takes one cycle to complete. It has no other effect.
+
+# instruction functions -- generate a thing that acts on register
+
+
+def noop() -> callable:
+    def _noop(register) -> callable:
+        # do nothing
+        yield register.value
+
+    return _noop
+
+
+def addx(v) -> callable:
+    def add_x(register):
+        # two cycles, no change in first cycle
+        yield register.value
+        register.value += v
+        yield register.value
+
+    return add_x
+
+
+def parse_line(line) -> callable:
+    tokens = line.split(" ")
+    match tokens[0]:
+        case "noop":
+            return noop()
+        case "addx":
+            return addx(int(tokens[1]))
+    raise Exception(f"Bad input: {line}")
+
+
+def parse_input(lines):
+    return (parse_line(line) for line in lines)
+
+
+def signal_strength(cycle: int, register: int) -> int:
+    return cycle * register
+
+
+@dataclass
+class Register:
+    name: str
+    value: int = 1
+
+    def __str__(self):
+        return f"{self.name}: {self.value}"
+
+
+class Cpu_v1:
+    def __init__(self):
+        self.x: Register = Register("x", 1)
+        self.max_cycles: int = 1000
+        self.signal_strengths: dict = {}
+        self.min_interesting_cycle: int = 20
+        self.interesting_cycle_interval: int = 40
+
+    def is_interesting_cycle(self, cycle) -> bool:
+        return (cycle == self.min_interesting_cycle) or (
+            cycle > self.min_interesting_cycle
+            and (cycle - self.min_interesting_cycle) % self.interesting_cycle_interval
+            == 0
+        )
+
+    def process(self, instructions, verbose=False):
+        # TODO: refactor if we ever have more than one register ;)
+        instructions_on_registers = (
+            instruction(self.x) for instruction in instructions
+        )
+        cycle_ops = itertools.chain.from_iterable(instructions_on_registers)
+        cycle = 1
+        while cycle < self.max_cycles:
+            try:
+                next(cycle_ops)
+                cycle += 1
+                if verbose:
+                    print(f"{cycle} -- {self.x}")
+                if self.is_interesting_cycle(cycle):
+                    if verbose:
+                        print(f" --> signal: {signal_strength(cycle, self.x.value)}")
+                    self.signal_strengths[cycle] = signal_strength(cycle, self.x.value)
+            except StopIteration:
+                # done with instructions so nothing more to do
+                return
+
+
 def part_1(input, verbose=False):
-    pass
+    instructions = parse_input(input)  # this is a list of callables
+    cpu = Cpu_v1()
+    cpu.process(instructions, verbose=verbose)
+    if verbose:
+        print(f"Signal strengths: {cpu.signal_strengths}")
+    return sum(cpu.signal_strengths.values())
+
+
+# --------------------------------
+# Part 2
+# --------------------------------
 
 
 def part_2(input, verbose=False):
