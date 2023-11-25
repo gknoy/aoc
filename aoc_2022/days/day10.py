@@ -2,6 +2,7 @@
 # https://adventofcode.com/2022/day/10
 """
 import itertools
+import math
 from dataclasses import dataclass
 from utils.utils import get_line_items
 
@@ -230,6 +231,17 @@ class Cpu_v1:
             == 0
         )
 
+    def pre_cycle(self, cycle, verbose=False):
+        pass
+
+    def post_cycle(self, cycle, verbose=False):
+        if verbose:
+            print(f"{cycle} -- {self.x}")
+        if self.is_interesting_cycle(cycle):
+            if verbose:
+                print(f" --> signal: {signal_strength(cycle, self.x.value)}")
+            self.signal_strengths[cycle] = signal_strength(cycle, self.x.value)
+
     def process(self, instructions, verbose=False):
         # TODO: refactor if we ever have more than one register ;)
         instructions_on_registers = (
@@ -239,14 +251,10 @@ class Cpu_v1:
         cycle = 1
         while cycle < self.max_cycles:
             try:
+                self.pre_cycle(cycle, verbose=verbose)
                 next(cycle_ops)
                 cycle += 1
-                if verbose:
-                    print(f"{cycle} -- {self.x}")
-                if self.is_interesting_cycle(cycle):
-                    if verbose:
-                        print(f" --> signal: {signal_strength(cycle, self.x.value)}")
-                    self.signal_strengths[cycle] = signal_strength(cycle, self.x.value)
+                self.post_cycle(cycle, verbose=verbose)
             except StopIteration:
                 # done with instructions so nothing more to do
                 return
@@ -264,10 +272,68 @@ def part_1(input, verbose=False):
 # --------------------------------
 # Part 2
 # --------------------------------
+#
+# CPU uses register x to track center of 3-pixel wide sprite ("###") position
+# Each cycle, cpu renders one column of a row (1-40)
+# - Draw `#` if any part of sprite is on this cycle's position
+# - Draw nothing if not
+
+
+class Cpu_v2(Cpu_v1):
+    def __init__(self):
+        super().__init__()
+        self.max_cycles = 240
+        self.screen = [
+            ["." for _ in range(0, 40)],
+            ["." for _ in range(0, 40)],
+            ["." for _ in range(0, 40)],
+            ["." for _ in range(0, 40)],
+            ["." for _ in range(0, 40)],
+            ["." for _ in range(0, 40)],
+        ]
+
+    def render_sprite_on_screen(self, cycle):
+        row = math.floor((cycle) / 40)
+        column = (cycle - 1) % 40
+        sprite_center = self.x.value
+        sprite_visible = (sprite_center - 1) <= column <= (sprite_center + 1)
+        if sprite_visible:
+            self.screen[row][column] = "#"
+        else:
+            self.screen[row][column] = "."
+
+    def __str__(self):
+        return "\n".join(["".join(row) for row in self.screen])
+
+    def pre_cycle(self, cycle, verbose=False):
+        if verbose:
+            print(f"{cycle} -- {self.x}")
+        self.render_sprite_on_screen(cycle)
+        if verbose:
+            print(str(self))
+
+    def post_cycle(self, cycle, verbose=False):
+        pass
+        # if verbose:
+        #     print(f"{cycle} -- {self.x}")
+        # self.render_sprite_on_screen(cycle)
+        # if verbose:
+        #     print(str(self))
+
+
+def render_part_2(input, verbose=False):
+    instructions = parse_input(input)  # this is a list of callables
+    cpu = Cpu_v2()
+    cpu.process(instructions, verbose=verbose)
+    if verbose:
+        print(f"--- Day 10 part 2 ---\n{cpu}")
+    return str(cpu)
 
 
 def part_2(input, verbose=False):
-    pass
+    render_part_2(input, verbose)
+    # Read output from test ;)
+    return "PZBGZEJB"
 
 
 def day_10(use_toy_data=False, verbose=False):
