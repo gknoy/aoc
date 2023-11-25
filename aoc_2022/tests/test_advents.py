@@ -29,6 +29,8 @@ TOY_EXPECTED = {
         7: [95437, 24933642],
         8: [21, 8],
         9: [13, 1],
+        # day 10 and later moved to tests/test_day10.py etc
+        # 10: [None, None],  # FIXME 
     },
 }
 
@@ -43,6 +45,8 @@ EXPECTED = {
         7: [1844187, 4978279],
         8: [1845, 230112],
         9: [6486, 2678],
+        # day 10 and later moved to tests/test_day10.py etc
+        # 10: [None, None],  # FIXME
     }
 }
 # fmt: on
@@ -56,7 +60,12 @@ def _advent(day_index, use_toy_data=False, verbose=False):
     "key,expected",
     [
         (day_number, TOY_EXPECTED[YEAR][day_number])
-        for day_number in range(1, 1 + len(ADVENTS[YEAR]))
+        for day_number in range(
+            1,
+            10
+            # day 10 and later moved to tests/test_day10.py etc
+            # 1 + len(ADVENTS[YEAR])
+        )
     ],
 )
 def test_toy_answers(key, expected):
@@ -67,7 +76,12 @@ def test_toy_answers(key, expected):
     "key,expected",
     [
         (day_number, EXPECTED[YEAR][day_number])
-        for day_number in range(1, 1 + len(ADVENTS[YEAR]))
+        for day_number in range(
+            1,
+            10
+            # day 10 and later moved to tests/test_day10.py etc
+            # 1 + len(ADVENTS[YEAR])
+        )
     ],
 )
 def test_answers(key, expected):
