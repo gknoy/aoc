@@ -1,7 +1,7 @@
 """
-# https://adventofcode.com/2022/day/{N}
+# https://adventofcode.com/2022/day/10
 """
-from aoc_2022.days.day{NN} import input, toy_input, part_1, part_2
+from aoc_2022.days.day10 import input, toy_input, part_1, part_2
 
 
 def test_part_1_toy():
