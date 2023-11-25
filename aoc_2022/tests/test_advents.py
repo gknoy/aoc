@@ -63,16 +63,16 @@ def test_toy_answers(key, expected):
     assert expected == _advent(key, use_toy_data=True)
 
 
-# @pytest.mark.parametrize(
-#     "key,expected",
-#     [
-#         (day_number, EXPECTED[YEAR][day_number])
-#         for day_number in range(1, 1 + len(ADVENTS[YEAR]))
-#     ],
-# )
-# def test_answers(key, expected):
-#     assert expected is not None
-#     if type(expected) is not SkipTest:
-#         assert expected == _advent(key, use_toy_data=False)
-#     else:
-#         assert True
+@pytest.mark.parametrize(
+    "key,expected",
+    [
+        (day_number, EXPECTED[YEAR][day_number])
+        for day_number in range(1, 1 + len(ADVENTS[YEAR]))
+    ],
+)
+def test_answers(key, expected):
+    assert expected is not None
+    if type(expected) is not SkipTest:
+        assert expected == _advent(key, use_toy_data=False)
+    else:
+        assert True
