@@ -26,7 +26,7 @@ toy_input: list[str] = [
 ]
 
 # -----------------------------------------
-# Part 1
+# Part 1: simple rope movement
 # -----------------------------------------
 #
 # If the head is ever two steps directly up, down, left, or right from the tail,
@@ -155,11 +155,6 @@ def test_parse_input():
     ]
 
 
-# --------
-# Part 1: Simple rope movement
-# --------
-
-
 @dataclass
 class Position:
     x: int = 0
@@ -170,6 +165,9 @@ class Position:
 
     def coords(self) -> tuple:
         return (self.x, self.y)
+
+    def __str__(self) -> str:
+        return f"({self.x}, {self.y})"
 
     # Allow Position to be used as a delta to another position
     def __add__(self, other):
@@ -290,6 +288,9 @@ class Rope_v1:
     def move_head(self, step: Command):
         delta = get_step_position_delta(step)
         self.head += delta
+        self.move_tail_to_follow_head()
+
+    def move_tail_to_follow_head(self):
         new_tail_pos = self.closest_adjacent_pos(self.tail, self.head)
         self.tail = new_tail_pos
 
@@ -408,8 +409,111 @@ def test_part_1():
     assert part_1(toy_input) == 13
 
 
-def part_2(input, verbose=False):
+# -----------------------------------------
+# Part 2: 10 segments (H, 1, 2, 3, ... 9)
+# -----------------------------------------
+#
+#       Rather than two knots, you now must simulate a rope consisting of ten knots.
+#       One knot is still the head of the rope and moves according to the [steps].
+#       Each knot further down the rope follows the knot in front of it
+#       using the same rules as before.
+#
+# The problem statement says that the knots move "using the same rules as before",
+# but the examples given seem very strange. e.g.:
+#
+#   == U 4 ==
+#
+#   ......
+#   ......
+#   ......
+#   ....H.
+#   4321..  (4 covers 5, 6, 7, 8, 9, s)
+#
+#   ......
+#   ......
+#   ....H.
+#   .4321.
+#   5.....  (5 covers 6, 7, 8, 9, s)
+#
+#   ....H.
+#   ....1.
+#   ..432.
+#   .5....
+#   6.....  (6 covers 7, 8, 9, s)
+#
+
+
+@dataclass
+class RopeSegment(Rope_v1):
+    """
+    Represent a rope segment, which connects two knots of our multi-segment rope.
+    Movement behavior is same as for Rope_v1
+    """
+
+    # head: my parent's tail,
+    # tail: my position
     pass
+
+
+class Rope_v2:
+    """Multi-segment rope"""
+
+    def __init__(self, n_knots=10):
+        self.segments = [
+            Rope_v1(head=Position(0, 0), tail=Position(0, 0)) for _ in range(1, n_knots)
+        ]
+
+    def move_head(self, step: Command):
+        self.segments[0].move_head(step)
+        prev_segment = self.segments[0]
+        # For each of the other segments
+        for segment in self.segments[1:]:
+            segment.head = prev_segment.tail  # already moved
+            segment.move_tail_to_follow_head()
+            prev_segment = segment
+
+    @property
+    def tail(self):
+        # tail of the last segment
+        return self.segments[-1].tail
+
+
+def part_2(input, verbose=False):
+    commands = parse_input(input)
+    steps = to_steps(commands)
+
+    # rope = Rope_v1(head=Position(0, 0), tail=Position(0, 0))
+    rope = Rope_v2(n_knots=10)
+    visited = set()
+
+    for step in steps:
+        if verbose:
+            print(f"--- move: {step}")
+        rope.move_head(step)
+        visited.add(rope.tail.coords())
+        if verbose:
+            for index, segment in enumerate(rope.segments):
+                print(f"  {index}  head: {segment.head}  tail: {segment.tail}")
+
+    return len(visited)
+
+
+def test_part2():
+    assert part_2(toy_input) == 1
+
+
+def test_part2_toy2():
+    toy2 = [
+        "R 5",
+        "U 8",
+        "L 8",
+        "D 3",
+        "R 17",
+        "D 10",
+        "L 25",
+        "U 20",
+    ]
+    assert part_2(toy2) == 36
 
 
 def day_9(use_toy_data=False, verbose=False):
