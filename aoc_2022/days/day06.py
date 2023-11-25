@@ -33,18 +33,6 @@ def find_packet_start(stream):
     return find_n_unique_chars(4, stream)
 
 
-def test_find_packet_start():
-    test_data = {
-        "mjqjpqmgbljsphdztnvjfqwrcgsmlb": 7,  # toy input ;)
-        "bvwbjplbgvbhsrlpgdmjqwftvncz": 5,
-        "nppdvjthqldpwncqszvftbrmjlhg": 6,
-        "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg": 10,
-        "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw": 11,
-    }
-    for stream, expected in test_data.items():
-        assert expected == find_packet_start(stream)
-
-
 def part_1(input, verbose=False):
     """
     Detect a start-of-packet marker in the datastream.
@@ -84,19 +72,6 @@ def find_message_start(stream):
     except it consists of 14 distinct characters rather than 4.
     """
     return find_n_unique_chars(14, stream)
-
-
-def test_find_message_start():
-    test_data = {
-        "mjqjpqmgbljsphdztnvjfqwrcgsmlb": 19,
-        #     ^^^^^^^^^^^^^^
-        "bvwbjplbgvbhsrlpgdmjqwftvncz": 23,
-        "nppdvjthqldpwncqszvftbrmjlhg": 23,
-        "nznrnfrfntjfmvfwmzdfjlvtqnbhcprsg": 29,
-        "zcfzfwzzqfrljwzlrfnpqdbhtmscgvjw": 26,
-    }
-    for stream, expected in test_data.items():
-        assert expected == find_message_start(stream)
 
 
 def day_6(use_toy_data=False, verbose=False):

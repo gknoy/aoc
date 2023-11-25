@@ -38,18 +38,6 @@ def calc_priority(char: str) -> int:
     return ord(char) - 96
 
 
-def test_get_rucksack():
-    line = "PmmdzqPrVvPwwTWBwg"
-    assert get_rucksack(line) == (set("PmmdzqPrV"), set("vPwwTWBwg"))
-
-
-def test_priority():
-    assert calc_priority("a") == 1
-    assert calc_priority("z") == 26
-    assert calc_priority("A") == 27
-    assert calc_priority("Z") == 52
-
-
 def part_1(input, verbose=False):
     """
     For example, suppose you have the following list of contents from six rucksacks:

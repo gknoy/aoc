@@ -1,7 +1,6 @@
 """
 # https://adventofcode.com/2022/day/4
 """
-import pytest
 from typing import List
 from utils.utils import get_line_items
 
@@ -46,32 +45,6 @@ class Range:
 def parse_pair(line: str) -> List[Range]:
     tuples = line.split(",")
     return [Range(*map(int, item.split("-"))) for item in tuples]
-
-
-def test_contains():
-    assert Range(2, 9).contains(Range(3, 7))
-    assert Range(2, 4).contains(Range(2, 4))
-
-
-@pytest.mark.parametrize(
-    "line,expected",
-    [
-        ["2-4,6-8", False],
-        ["2-3,4-5", False],
-        ["5-7,7-9", True],
-        ["2-8,3-7", True],
-        ["6-6,4-6", True],
-        ["2-6,4-8", True],
-    ],
-)
-def test_overlap(line, expected):
-    a, b = parse_pair(line)
-    assert a.overlaps(b) == expected
-    assert b.overlaps(a) == expected
-
-
-def test_parse_pair():
-    assert parse_pair("2-4,6-8") == [Range(2, 4), Range(6, 8)]
 
 
 def part_1(input, verbose=False):

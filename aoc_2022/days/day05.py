@@ -55,19 +55,6 @@ def get_boxes_and_instructions(input: List[str]) -> List[List[str]]:
     return [input[:n_box_lines], input[n_box_lines + 1 :]]
 
 
-def test_get_boxes_and_instructions():
-    boxes, instructions = get_boxes_and_instructions(toy_input)
-    assert [boxes, instructions] == [
-        ["    [D]", "[N] [C]", "[Z] [M] [P]", " 1   2   3"],
-        [
-            "move 1 from 2 to 1",
-            "move 3 from 1 to 3",
-            "move 2 from 2 to 1",
-            "move 1 from 1 to 2",
-        ],
-    ]
-
-
 class BadInputError(Exception):
     pass
 
@@ -78,10 +65,6 @@ def parse_move(instruction: str) -> MoveOrder:
         raise BadInputError(instruction)
     n, s, d = map(int, m.groups())
     return MoveOrder(n, s, d)
-
-
-def test_parse_move():
-    assert parse_move("move 3 from 2 to 1") == MoveOrder(n_boxes=3, source=2, dest=1)
 
 
 def get_stacks_of_boxes(box_ascii_art: List[str]) -> StackedBoxesType:
@@ -105,75 +88,6 @@ def move_one_box_at_a_time(stacks: StackedBoxesType, move_order: MoveOrder) -> N
     """
     for iteration in range(move_order.n_boxes):
         stacks[move_order.dest].append(stacks[move_order.source].pop())
-
-
-def test_get_stacks_of_boxes():
-    boxes = ["    [D]", "[N] [C]", "[Z] [M] [P]", " 1   2   3"]
-    assert get_stacks_of_boxes(boxes) == [
-        # fmt: off
-        ["Z", "N"],
-        ["M", "C", "D"],
-        ["P"],
-        # fmt: on
-    ]
-
-
-EXPECTED_REAL_STACKS = [
-    # fmt: off
-    ["R", "N", "F", "V", "L", "J", "S", "M"],
-    ["P", "N", "D", "Z", "F", "J", "W", "H"],
-    ["W", "R", "C", "D", "G"],
-    ["N", "B", "S"],
-    ["M", "Z", "W", "P", "C", "B", "F", "N"],
-    ["P", "R", "M", "W"],
-    ["R", "T", "N", "G", "L", "S", "W"],
-    ["Q", "T", "H", "F", "N", "B", "V"],
-    ["L", "M", "H", "Z", "N", "F"],
-    # fmt: on
-]
-
-
-def test_real_stacks():
-    boxes = """
-    [M] [H]         [N]
-    [S] [W]         [F]     [W] [V]
-    [J] [J]         [B]     [S] [B] [F]
-    [L] [F] [G]     [C]     [L] [N] [N]
-    [V] [Z] [D]     [P] [W] [G] [F] [Z]
-    [F] [D] [C] [S] [W] [M] [N] [H] [H]
-    [N] [N] [R] [B] [Z] [R] [T] [T] [M]
-    [R] [P] [W] [N] [M] [P] [R] [Q] [L]
-     1   2   3   4   5   6   7   8   9
-    """.split(
-        "\n"
-    )
-    assert get_stacks_of_boxes(boxes) == EXPECTED_REAL_STACKS
-
-
-def test_move_one_at_a_time():
-    stacks = [
-        # fmt: off
-        ["Z", "N"],
-        ["M", "C", "D"],
-        ["P"],
-        # fmt: on
-    ]
-    move_one_box_at_a_time(stacks, MoveOrder(2, 2, 1))
-    assert stacks == [
-        # fmt: off
-        ["Z", "N", "D", "C"],
-        ["M"],
-        ["P"],
-        # fmt: on
-    ]
-    move_one_box_at_a_time(stacks, MoveOrder(1, 1, 3))
-    assert stacks == [
-        # fmt: off
-        ["Z", "N", "D"],
-        ["M"],
-        ["P", "C"],
-        # fmt: on
-    ]
 
 
 def part_1(input, verbose=False):

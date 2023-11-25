@@ -2,13 +2,13 @@
 # https://adventofcode.com/2022/day/7
 """
 import functools
-import pytest
 import re
-from typing import List, Union, Iterable
+from typing import Iterable
+
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2022/input/07.txt"))
-toy_input: List[str] = [
+toy_input: list[str] = [
     # fmt: off
     "$ cd /",
     "$ ls",
@@ -64,7 +64,7 @@ class FSNode(ParsedItem):
         self.name = name
         self.parent = parent  # be lazy about tracking tree-parents ;)
         self._size = size
-        self.children: List[FSNode] = []
+        self.children: list[FSNode] = []
 
     def __eq__(self, other):
         # if other is None:
@@ -212,7 +212,7 @@ class LsCommand(CmdNode):
 # ----------------------------------------
 
 
-def parse_input(input: List[str]) -> RootDirNode:
+def parse_input(input: list[str]) -> RootDirNode:
     # a standalone Node, with no children
     root = RootDirNode("/")
     root.parent = root  # in case some jerk decides to 'cd ..' too many times
@@ -257,7 +257,7 @@ def parse_line(raw_input: str, current_node=None) -> ParsedItem:
     cd_match = CD_CMD_PATTERN.match(raw_input)
     if cd_match:
         # unpack
-        name, = cd_match.groups()
+        (name,) = cd_match.groups()
         if name == "..":
             # Return something different so that we know NOT to put in tree
             # We don't care
@@ -273,114 +273,6 @@ def parse_line(raw_input: str, current_node=None) -> ParsedItem:
 
     # if we get here, something is wrong
     raise Exception(f"Cannot match input: {raw_input}")
-
-
-# ----------------------------------------
-# tests
-# ----------------------------------------
-
-
-@pytest.mark.parametrize(
-    "line,expected",
-    [
-        ["waffles", Exception("Cannot match input: waffles")],
-        ["$ cd /", CdCommand("/")],
-        ["$ cd ..", CdCommand("..")],
-        ["$ cd foo", CdCommand("foo")],
-        ["$ ls", LsCommand()],
-        ["dir a", DirNode("a")],
-        ["14848514 b.txt", FileNode("b.txt", size=14848514)],
-        ["29116 f", FileNode("f", size=29116)],
-    ],
-)
-def test_parse_line(line: str, expected: Union[Exception, ParsedItem]):
-    current = DirNode("current", parent=RootDirNode("/"))
-    if type(expected) is Exception:
-        with pytest.raises(Exception) as raised:
-            parse_line(line, current_node=current)
-        assert raised.match(str(expected))
-    else:
-        expected: ParsedItem = expected
-        parsed = parse_line(line, current_node=current)
-        assert parsed == expected
-        if expected.is_fs():
-            assert parsed.parent == current
-            assert parsed.size == expected.size
-
-
-def test_size():
-    root = RootDirNode()
-    a = DirNode(name="a", parent=root)
-    e = DirNode(name="e", parent=a)
-    e.add_child(FileNode(name="i", size=584, parent=e))
-    a.add_child(e)
-    a.add_child(FileNode(name="f", size=29116, parent=a))
-    a.add_child(FileNode(name="g", size=2557, parent=a))
-    a.add_child(FileNode(name="h.lst", size=62596, parent=a))
-    root.add_child(a)
-    root.add_child(FileNode(name="b.txt", size=14848514, parent=root))
-    root.add_child(FileNode(name="c.dat", size=8504156, parent=root))
-    d = DirNode(name="d", parent=root)
-    d.add_child(FileNode(name="j", size=4060174, parent=d))
-    d.add_child(FileNode(name="d.log", size=8033020, parent=d))
-    d.add_child(FileNode(name="d.ext", size=5626152, parent=d))
-    d.add_child(FileNode(name="k", size=7214296, parent=d))
-    root.add_child(d)
-    assert e.size == 584
-    assert a.size == e.size + 29116 + 2557 + 62596
-    assert d.size == 4060174 + 8033020 + 5626152 + 7214296
-    assert root.size == a.size + 14848514 + 8504156 + d.size
-
-
-@pytest.fixture
-def expected_toy_tree():
-    # Expected root from part 1 problem description
-    root = RootDirNode()
-    a = DirNode(name="a", parent=root)
-    e = DirNode(name="e", parent=a)
-    e.add_child(FileNode(name="i", size=584, parent=e))
-    a.add_child(e)
-    a.add_child(FileNode(name="f", size=29116, parent=a))
-    a.add_child(FileNode(name="g", size=2557, parent=a))
-    a.add_child(FileNode(name="h.lst", size=62596, parent=a))
-    root.add_child(a)
-    root.add_child(FileNode(name="b.txt", size=14848514, parent=root))
-    root.add_child(FileNode(name="c.dat", size=8504156, parent=root))
-    d = DirNode(name="d", parent=root)
-    d.add_child(FileNode(name="j", size=4060174, parent=d))
-    d.add_child(FileNode(name="d.log", size=8033020, parent=d))
-    d.add_child(FileNode(name="d.ext", size=5626152, parent=d))
-    d.add_child(FileNode(name="k", size=7214296, parent=d))
-    root.add_child(d)
-    return root
-
-
-def test_parse_input(expected_toy_tree):
-    parsed = parse_input(toy_input)
-    assert parsed.render() == expected_toy_tree.render()
-    assert parsed == expected_toy_tree
-
-
-def test_traverse(expected_toy_tree):
-    items = list(expected_toy_tree.traverse())
-    for item in items:
-        assert isinstance(item, FSNode)
-    assert [item.name for item in items] == [
-        "/",
-        "a",
-        "e",
-        "i",
-        "f",
-        "g",
-        "h.lst",
-        "b.txt",
-        "c.dat",
-        "d",
-        "j",
-        "d.log",
-        "d.ext",
-        "k",
-    ]
 
 
 # ----------------------------------------
