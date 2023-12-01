@@ -4,7 +4,7 @@ Advent of Code 2023
 
 cf. https://adventofcode.com/2023/
 
-### Pre-requisites:
+### Pre-requisites / Starting:
 
 My recent 2022 puzzles use features from python 3.11 (for nicer type hinting).
 
@@ -17,10 +17,35 @@ pip install -r requirements.txt
 I'm building this on a Macbook with `pyenv` installed, and 
 haven't yet gotten things working on my pc. ;)
 
+### Avoiding Spoilers
+
+If you clone this and start working after I've already started playing, 
+you could see my solutions. ;)  You probably don't want that, so you probably 
+want to delete my solutions + tests and diverge from main:
+
+```sh
+git checkout main
+
+# delete solutions to prevent spoilers
+rm aoc_2023/days/day*.py
+rm aoc_2023/input/*.txt
+rm aoc_2023/days/test*.py
+
+git add aoc_2023/
+git commit -m "DIVERGE from gknoy/aoc:main to avoid spoilers"
+
+# get started on day 1 :D
+git checkout main -b 2023-01
+```
+
+This has the advantage of keeping any tooling fixes that I make since Dec 1.
+
 ### Starting a new day's puzzle
 
-Run `scaffold.sh` to create files for day N:
+Check out a new branch, and run `scaffold.sh` to create files for day N:
 ```sh
+git checkout main -b 2023-01
+
 # ./scaffold.sh {year} {day} 
 ./scaffold.sh 2023 1
 ```
