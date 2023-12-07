@@ -1,11 +1,26 @@
 """
 # https://adventofcode.com/2023/day/2
 """
-from aoc_2023.days.day02 import input, toy_input, part_1, part_2
+from aoc_2023.days.day02 import input, toy_input, part_1, part_2, parse_game, parse_pull
+
+
+def test_parse_pull():
+    assert parse_pull("1 red, 2 green, 6 blue") == {"r": 1, "g": 2, "b": 6}
+
+
+def test_parse_game():
+    game = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"
+    assert parse_game(game) == {
+        1: [
+            {"b": 3, "r": 4},
+            {"r": 1, "g": 2, "b": 6},
+            {"g": 2},
+        ]
+    }
 
 
 def test_part_1_toy():
-    assert part_1(toy_input) == "FIXME"
+    assert part_1(toy_input) == 8
 
 
 def test_part_1_real():
