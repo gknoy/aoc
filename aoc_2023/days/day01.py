@@ -57,9 +57,7 @@ toy_input_2 = [
 ]
 
 FIRST_DIGIT_v2 = re.compile(r"(\d|one|two|three|four|five|six|seven|eight|nine|zero)")
-LAST_DIGIT_v2 = re.compile(
-    r".*(\d|one|two|three|four|five|six|seven|eight|nine|zero).*?"
-)
+LAST_DIGIT_v2 = re.compile(r".*(\d|one|two|three|four|five|six|seven|eight|nine|zero).*?")
 DIGITS = {
     "1": 1,
     "2": 2,
