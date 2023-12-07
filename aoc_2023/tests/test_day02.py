@@ -29,8 +29,8 @@ def test_part_1_real():
 
 
 def test_part_2_toy():
-    assert part_2(toy_input) == "FIXME"
+    assert part_2(toy_input) == 2286
 
 
 def test_part_2_real():
-    assert part_2(input) == "FIXME"
+    assert part_2(input) == 68638

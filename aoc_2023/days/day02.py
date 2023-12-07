@@ -61,6 +61,7 @@ def filter_possible_games(games, constraints: Pull) -> list[Game]:
 
 
 def part_1(input, verbose=False):
+    # which games are possible with these constraints?
     # 12 red cubes, 13 green cubes, and 14 blue cubes
     constraints = {"r": 12, "g": 13, "b": 14}
     games = [parse_game(line) for line in input]
@@ -68,8 +69,37 @@ def part_1(input, verbose=False):
     return sum(game["id"] for game in filtered_games)
 
 
+# ----------------------------------
+# Part 2
+# ----------------------------------
+# sum of powers of pulls
+
+
+def power(pull: Pull) -> int:
+    return pull.get("r", 0) * pull.get("g", 0) * pull.get("b", 0)
+
+
+def min_possible_counts(game: Game) -> Pull:
+    """Find the smallest number of cubes needed to satisfy all pulls"""
+    # this is the same of max(r), max(g), max(b) for all pulls in the game
+    maxes = {"r": 0, "g": 0, "b": 0}
+    for pull in game["pulls"]:
+        for c in pull:
+            maxes[c] = max(pull[c], maxes[c])
+    return maxes
+
+
 def part_2(input, verbose=False):
-    pass
+    # What is the fewest number of cubes of each color
+    # that could have been in the bag to make the game possible?
+    # The power(pull) == count of red, green, and blue cubes multiplied together.
+    # The power of the minimum set of cubes in game 1 is 48.
+    # In games 2-5 it was 12, 1560, 630, and 36, respectively.
+    # Adding up these five powers produces the sum 2286.
+
+    games = [parse_game(line) for line in input]
+    min_powers_per_pull = [power(min_possible_counts(game)) for game in games]
+    return sum(min_powers_per_pull)
 
 
 def day_2(use_toy_data=False, verbose=False):
