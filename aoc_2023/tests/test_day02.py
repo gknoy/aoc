@@ -11,11 +11,12 @@ def test_parse_pull():
 def test_parse_game():
     game = "Game 1: 3 blue, 4 red; 1 red, 2 green, 6 blue; 2 green"
     assert parse_game(game) == {
-        1: [
+        "id": 1,
+        "pulls": [
             {"b": 3, "r": 4},
             {"r": 1, "g": 2, "b": 6},
             {"g": 2},
-        ]
+        ],
     }
 
 
@@ -24,7 +25,7 @@ def test_part_1_toy():
 
 
 def test_part_1_real():
-    assert part_1(input) == "FIXME"
+    assert part_1(input) == 2776
 
 
 def test_part_2_toy():

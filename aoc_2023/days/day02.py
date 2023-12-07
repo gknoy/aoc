@@ -24,7 +24,7 @@ toy_input: list[str] = [
 # If you add up the IDs of the games that would have been possible, you get 8
 
 Pull = dict[str, int]
-Game = dict[str, (int|list[Pull])]  # {1: [{b: 3, r: 4}, {r: 1, g: 2, b: 6}]}
+Game = dict[str, (int | list[Pull])]  # {1: [{b: 3, r: 4}, {r: 1, g: 2, b: 6}]}
 
 
 def parse_cube_count(item: str) -> tuple[str, int]:
@@ -43,25 +43,29 @@ def parse_game(line: str) -> Game:
     game_tag, raw_pulls = list(line.split(":"))
     game_id = int(game_tag.split(" ")[1])
     pulls = raw_pulls.split("; ")
-    return {
-        "id": game_id,
-        "pulls": [parse_pull(pull.strip()) for pull in pulls]
-    }
+    return {"id": game_id, "pulls": [parse_pull(pull.strip()) for pull in pulls]}
 
 
-def possible(pull: Pull, constraints: Pull) -> bool:
-    for c, n in
+def game_possible(game: Game, constraints: Pull) -> bool:
+    pulls = game["pulls"]
+    return all(pull_possible(pull, constraints) for pull in pulls)
+
+
+def pull_possible(pull: Pull, constraints: Pull) -> bool:
+    return all(constraints.get(c, 0) >= n for c, n in pull.items())
 
 
 def filter_possible_games(games, constraints: Pull) -> list[Game]:
     # Return only the games where all of the pulls are <= constraint counts
-    return [
-        game for game in games
-        if all(possible(pull) for pull in games)
-    ]
+    return [game for game in games if game_possible(game, constraints)]
+
 
 def part_1(input, verbose=False):
-    pass
+    # 12 red cubes, 13 green cubes, and 14 blue cubes
+    constraints = {"r": 12, "g": 13, "b": 14}
+    games = [parse_game(line) for line in input]
+    filtered_games = filter_possible_games(games, constraints)
+    return sum(game["id"] for game in filtered_games)
 
 
 def part_2(input, verbose=False):
