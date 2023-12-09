@@ -165,7 +165,8 @@ def test_part_1_toy():
 
 
 def test_part_1_real():
-    # 517752 is too low apparently, but I can't figure out why
+    answer = part_1(input)
+    assert answer > 517752  # too low apparently, but I can't figure out why
     assert part_1(input) == "FIXME"
 
 

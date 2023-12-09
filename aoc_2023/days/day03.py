@@ -146,6 +146,7 @@ def get_at_position(grid: Grid, pos: tuple[int, int]) -> Item | None:
 def get_adjacent_parts(grid: Grid, pos) -> list[PartNumber]:
     adj_positions = get_adjacent_positions(pos)
     candidates = set([get_at_position(grid, adj_pos) for adj_pos in adj_positions])
+    # candidates = [get_at_position(grid, adj_pos) for adj_pos in adj_positions]
     return [item for item in candidates if item is not None and type(item) is PartNumber]
 
 
@@ -172,8 +173,6 @@ def parse_grid(lines: list[str]) -> Grid:
 def part_1(input, verbose=False):
     grid = parse_grid(input)
     part_numbers = list(find_part_numbers(grid, verbose))
-    pn_set = set(part_numbers)
-    assert len(pn_set) == len(part_numbers)
     numbers = [part.value for part in part_numbers]
     if verbose:
         print(numbers)
