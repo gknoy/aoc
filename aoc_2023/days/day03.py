@@ -149,15 +149,19 @@ def get_adjacent_parts(grid: Grid, pos) -> list[PartNumber]:
     return [item for item in candidates if item is not None and type(item) is PartNumber]
 
 
-def find_part_numbers(grid: Grid) -> list[PartNumber]:
+def find_part_numbers(grid: Grid, verbose:bool = False) -> list[PartNumber]:
     """
     Get all part numbers that are adjacent to a symbol
     Assume some parts can be adjacent to multiple symbols
     """
     for row_index in range(len(grid)):
+        if verbose:
+            print(f"{row_index}:")
         for item in grid[row_index]:
             if type(item) is Symbol:
                 for part in get_adjacent_parts(grid, (row_index, item.start)):
+                    if verbose:
+                        print(f"    {item.name} => {part.value}")
                     yield part
 
 
@@ -167,8 +171,12 @@ def parse_grid(lines: list[str]) -> Grid:
 
 def part_1(input, verbose=False):
     grid = parse_grid(input)
-    part_numbers = list(find_part_numbers(grid))
+    part_numbers = list(find_part_numbers(grid, verbose))
+    pn_set = set(part_numbers)
+    assert len(pn_set) == len(part_numbers)
     numbers = [part.value for part in part_numbers]
+    if verbose:
+        print(numbers)
     return sum(numbers)
 
 
