@@ -14,6 +14,7 @@ from aoc_2023.days.day03 import (
     get_at_position,
     get_adjacent_parts,
     find_part_numbers,
+    find_gear_ratios,
 )
 
 
@@ -188,6 +189,25 @@ def test_parse_grid():
     assert parse_grid(toy_input) == expected
 
 
+def test_find_gears():
+    grid = parse_grid(
+        [
+            ".......................661.........................485..565.......344.......325.....................................841.....725.............",
+            "....*609..131................512.......................*................536*..............462/..-...60..424.........@....$.*................",
+            ".316.........*.......39..................@.630......377........919...........98................789..*..*..............788..2.......=..564...",
+            "...........431...535...*...............622.-..../.................*..........*.......682...........108.116....@...-...............299.......",
+        ]
+    )
+    gear_ratios = list(find_gear_ratios(grid))
+    expected = [
+        # fmt: off
+        (316*609), (377*565), (536 * 325), (2*725),
+        (131*431), (60*108), (424*116),
+        # fmt: on
+    ]
+    assert list(sorted(gear_ratios)) == list(sorted(expected))
+
+
 def test_part_1_toy():
     assert part_1(toy_input) == 4361
 
@@ -199,9 +219,9 @@ def test_part_1_real():
     assert part_1(input) == 519444
 
 
-# def test_part_2_toy():
-#     assert part_2(toy_input) == "FIXME"
+def test_part_2_toy():
+    assert part_2(toy_input) == 467835
 
 
-# def test_part_2_real():
-#     assert part_2(input) == "FIXME"
+def test_part_2_real():
+    assert part_2(input) == "FIXME"

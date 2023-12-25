@@ -2,8 +2,10 @@
 # https://adventofcode.com/2023/day/3
 """
 import functools
-import itertools
+
+# import itertools
 from dataclasses import dataclass
+from typing import Iterable
 
 from utils.utils import get_line_items
 
@@ -158,7 +160,7 @@ def get_adjacent_parts(grid: Grid, pos) -> list[PartNumber]:
     return [item for item in candidates if item is not None and type(item) is PartNumber]
 
 
-def find_part_numbers(grid: Grid, verbose: bool = False) -> list[PartNumber]:
+def find_part_numbers(grid: Grid, verbose: bool = False) -> Iterable[PartNumber]:
     """
     Get all part numbers that are adjacent to a symbol
     Assume some parts can be adjacent to multiple symbols
@@ -190,8 +192,48 @@ def part_1(input, verbose=False):
     return sum(numbers)
 
 
+# -----------------------------
+# Part 2
+# -----------------------------
+# A gear is any * symbol that is adjacent to exactly two part numbers.
+# Its gear ratio is the result of multiplying those two numbers together.
+
+
+def get_gear_ratio(grid: Grid, pos) -> None | int:
+    """
+    # None if this position isn't a gear
+    # A gear is any * symbol that is adjacent to exactly two part numbers.
+    # Its gear ratio is the result of multiplying those two numbers together.
+    """
+    this_item = get_at_position(grid, pos)
+    if this_item is None or type(this_item) is PartNumber or this_item.name != "*":
+        return None
+
+    adj_positions = get_adjacent_positions(pos)
+    # we have to use a set here, because the same item will get reported for multiple positions
+    # in a row if it has multiple digits:
+    #       NN
+    #      x
+    candidates = set([get_at_position(grid, adj_pos) for adj_pos in adj_positions])
+    adjacent_parts = [item for item in candidates if item is not None and type(item) is PartNumber]
+    if len(adjacent_parts) == 2:
+        return adjacent_parts[0].value * adjacent_parts[1].value
+    return None
+
+
+def find_gear_ratios(grid: Grid) -> Iterable[int]:
+    for row_index in range(len(grid)):
+        for item in grid[row_index]:
+            if type(item) is Symbol:
+                ratio = get_gear_ratio(grid, item.start)
+                if ratio is not None:
+                    yield ratio
+
+
 def part_2(input, verbose=False):
-    pass
+    grid = parse_grid(input)
+    ratios = list(find_gear_ratios(grid))
+    return sum(ratios)
 
 
 def day_3(use_toy_data=False, verbose=False):
