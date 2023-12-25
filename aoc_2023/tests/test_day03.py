@@ -18,7 +18,7 @@ from aoc_2023.days.day03 import (
 
 
 def test_parse_line():
-    line = ".13..+.58."
+    line = ".13..+.58"  # <-- number ending at end of line exercises boundary condition
     #       0123456789
     expected = [
         PartNumber(value=13, start=(6, 1), end=(6, 3)),
@@ -60,7 +60,9 @@ def test_get_adjacent_parts():
             PartNumber(value=467, start=(0, 0), end=(0, 3)),
             PartNumber(value=114, start=(0, 5), end=(0, 8)),
         ],
-        [Symbol(start=(1, 3), end=(1, 4), name="*")],
+        [
+            Symbol(start=(1, 3), end=(1, 4), name="*"),
+        ],
         [
             PartNumber(start=(2, 2), end=(2, 4), value=35),
             PartNumber(start=(2, 6), end=(2, 9), value=633),
@@ -138,7 +140,7 @@ def test_find_pns_two():
         546, 507, 433,
         # fmt: on
     ]
-    sorted_values  = list(sorted(values))
+    sorted_values = list(sorted(values))
     sorted_expected = list(sorted(expected))
     assert sorted_values == sorted_expected
     # assert values == expected
@@ -190,10 +192,11 @@ def test_part_1_toy():
     assert part_1(toy_input) == 4361
 
 
-# def test_part_1_real():
-#     answer = part_1(input)
-#     assert answer > 517752  # too low apparently, but I can't figure out why
-#     assert part_1(input) == "FIXME"
+def test_part_1_real():
+    answer = part_1(input)
+    # Initial guess too low, didn't handle number at end of input line
+    assert answer > 517752
+    assert part_1(input) == 519444
 
 
 # def test_part_2_toy():

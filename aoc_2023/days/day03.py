@@ -88,7 +88,6 @@ def parse_line(line: str, row: int) -> GridRow:
 
     for index in range(len(line)):
         c = line[index]
-
         if is_digit(c):
             if current is None:
                 # first digit of new number
@@ -118,6 +117,10 @@ def parse_line(line: str, row: int) -> GridRow:
             # save this symbol too
             found.append(Symbol(name=c, start=(row, index), end=(row, index + 1)))
             current = None
+    # at end of line, we may have a part number being parsed still
+    # (Hat tip to reddit thread for cluing me in that I was forgetting the edge case.)
+    if type(current) is PartNumber:
+        found.append(current)
     return found
 
 
@@ -177,7 +180,10 @@ def parse_grid(lines: list[str]) -> Grid:
 
 def part_1(input, verbose=False):
     grid = parse_grid(input)
-    part_numbers = list(find_part_numbers(grid, verbose))
+    # use set(part_numbers) in case any part numbers are next to multiple symbols
+    # (This works because part numbers have unique positions)
+    part_numbers = set(find_part_numbers(grid, verbose))
+    # part_numbers = list(find_part_numbers(grid, verbose))
     numbers = [part.value for part in part_numbers]
     if verbose:
         print(numbers)
