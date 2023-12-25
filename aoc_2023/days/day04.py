@@ -1,6 +1,7 @@
 """
 # https://adventofcode.com/2023/day/4
 """
+from dataclasses import dataclass
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2023/input/04.txt"))
@@ -23,8 +24,38 @@ toy_input: list[str] = [
 # each match after the first doubles the point value of that card
 
 
+@dataclass
+class Card:
+    name: str = ""  # e.g. "Card 1"
+    numbers: tuple = ()
+    winning: tuple = ()
+    score: int = 0
+
+
+def _strip(items: list[str]) -> list[str]:
+    return [item.strip() for item in items]
+
+
+def geometric_score(winning: list[int], numbers: list[int], base: int = 2) -> int:
+    matches = [item for item in numbers if item in winning]
+    if len(matches) == 0:
+        return 0
+    # 1 match: 1 point (2^0), double each extra
+    return pow(base, len(matches) - 1)
+
+
+def parse_line(line: str) -> Card:
+    name, rest = _strip(line.split(":"))
+    winning_raw, numbers_raw = _strip(rest.split("|"))
+    winning = [int(item) for item in winning_raw.split()]
+    numbers = [int(item) for item in numbers_raw.split()]
+    score = geometric_score(winning, numbers, 2)
+    return Card(name=name, numbers=numbers, winning=winning, score=score)
+
+
 def part_1(input, verbose=False):
-    pass
+    cards = [parse_line(line) for line in input]
+    return sum(card.score for card in cards)
 
 
 def part_2(input, verbose=False):
