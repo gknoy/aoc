@@ -30,10 +30,13 @@ toy_input: list[str] = [
 # Any number adjacent to a symbol, even diagonally, is a "part number"
 
 
+Position = tuple[int, int]  # row, col
+
+
 @dataclass
 class Item:
-    start: int = 0
-    end: int = 0
+    start: Position = (0, 0)
+    end: Position = (0, 0)
 
     def __hash__(self):
         return hash((self.start, self.end))
@@ -66,7 +69,6 @@ class PartNumber(Item):
 
 GridRow = list[Symbol | PartNumber]
 Grid = list[GridRow]
-Position = tuple[int, int]  # row, col
 
 
 @functools.cache
@@ -79,7 +81,7 @@ def is_symbol(c: str) -> bool:
     return c != "." and not is_digit(c)
 
 
-def parse_line(line: str) -> GridRow:
+def parse_line(line: str, row: int) -> GridRow:
     # the current-parsing-thing (We can just directly store symbols)
     current: PartNumber | None = None
     found = []
@@ -91,15 +93,15 @@ def parse_line(line: str) -> GridRow:
             if current is None:
                 # first digit of new number
                 current = PartNumber(
-                    start=index,
-                    end=index + 1,  # changed once we find end of string
+                    start=(row, index),
+                    end=(row, index + 1),  # changed once we find end of string
                     value=int(c),
                 )
                 continue
             if type(current) is PartNumber:
-                #
+                # continue tracking digits in the same number
                 current.value = int(f"{current.value}{c}")
-                current.end = index + 1
+                current.end = (row, index + 1)
                 continue
         if c == ".":
             if current is None:
@@ -114,7 +116,7 @@ def parse_line(line: str) -> GridRow:
                 # store it because we've found something else
                 found.append(current)
             # save this symbol too
-            found.append(Symbol(name=c, start=index, end=index + 1))
+            found.append(Symbol(name=c, start=(row, index), end=(row, index + 1)))
             current = None
     return found
 
@@ -138,19 +140,22 @@ def get_at_position(grid: Grid, pos: tuple[int, int]) -> Item | None:
         return None
     # we don't care about row bounds because items store their locations
     for item in grid[row]:
-        if item.start <= col < item.end:
+        if item.start[1] <= col < item.end[1]:
             return item
     return None
 
 
 def get_adjacent_parts(grid: Grid, pos) -> list[PartNumber]:
     adj_positions = get_adjacent_positions(pos)
+    # we have to use a set here, because the same item will get reported for multiple positions
+    # in a row if it has multiple digits:
+    #       NN
+    #      x
     candidates = set([get_at_position(grid, adj_pos) for adj_pos in adj_positions])
-    # candidates = [get_at_position(grid, adj_pos) for adj_pos in adj_positions]
     return [item for item in candidates if item is not None and type(item) is PartNumber]
 
 
-def find_part_numbers(grid: Grid, verbose:bool = False) -> list[PartNumber]:
+def find_part_numbers(grid: Grid, verbose: bool = False) -> list[PartNumber]:
     """
     Get all part numbers that are adjacent to a symbol
     Assume some parts can be adjacent to multiple symbols
@@ -160,14 +165,14 @@ def find_part_numbers(grid: Grid, verbose:bool = False) -> list[PartNumber]:
             print(f"{row_index}:")
         for item in grid[row_index]:
             if type(item) is Symbol:
-                for part in get_adjacent_parts(grid, (row_index, item.start)):
+                for part in get_adjacent_parts(grid, item.start):
                     if verbose:
-                        print(f"    {item.name} => {part.value}")
+                        print(f"    {item.name} => {part}")
                     yield part
 
 
 def parse_grid(lines: list[str]) -> Grid:
-    return [parse_line(line) for line in lines]
+    return [parse_line(line, index) for index, line in enumerate(lines)]
 
 
 def part_1(input, verbose=False):
