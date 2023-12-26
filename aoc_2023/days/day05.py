@@ -3,6 +3,7 @@
 """
 from dataclasses import dataclass
 from functools import cached_property
+from itertools import islice
 from utils.utils import get_line_items
 
 input = list(get_line_items("aoc_2023/input/05.txt"))
@@ -202,10 +203,32 @@ def part_1(input, verbose=False):
 # ------------------
 # Part 2
 # ------------------
+# the seeds line describes ranges of seed numbers.
+# values are pairs (start, len)
+
+
+def batched(iterable, n):
+    # Backport itertools.batched to 3.11, since it's new in 3.12
+    # c.f. https://docs.python.org/3/library/itertools.html#itertools.batched
+    # batched('ABCDEFG', 3) --> ABC DEF G
+    if n < 1:
+        raise ValueError("n must be at least one")
+    it = iter(iterable)
+    while batch := tuple(islice(it, n)):
+        yield batch
+
+
+def parse_seed_data(seed_data: list[int]) -> list[range]:
+    return [range(a, a + b) for a, b in batched(seed_data, n=2)]
 
 
 def part_2(input, verbose=False):
-    pass
+    seed_data, mappings = parse_input(input)
+    seed_ranges = parse_seed_data(seed_data)
+    m = ChainedMapping(mappings=mappings)
+    locations = [m[seed] for seeds in seed_ranges for seed in seeds]
+    smallest_location = min(locations)
+    return smallest_location
 
 
 def day_5(use_toy_data=False, verbose=False):

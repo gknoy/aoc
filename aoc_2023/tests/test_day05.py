@@ -10,6 +10,7 @@ from aoc_2023.days.day05 import (
     MapSegment,
     ChainedMapping,
     parse_input,
+    parse_seed_data,
 )
 
 
@@ -118,6 +119,14 @@ def test_chained_mapping():
     assert m[13] == 35  # Seed 13, soil 13, fertilizer 52, .... humidity 35, location 35.
 
 
+def test_parse_seed_data():
+    seed_data = [79, 14, 55, 13]
+    assert parse_seed_data(seed_data) == [
+        range(79, 79 + 14),
+        range(55, 55 + 13),
+    ]
+
+
 def test_part_1_toy():
     assert part_1(toy_input) == 35
 
@@ -126,8 +135,8 @@ def test_part_1_real():
     assert part_1(input) == 379811651
 
 
-# def test_part_2_toy():
-#     assert part_2(toy_input) == "FIXME"
+def test_part_2_toy():
+    assert part_2(toy_input) == 46
 
 
 # def test_part_2_real():
