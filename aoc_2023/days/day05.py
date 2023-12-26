@@ -116,28 +116,87 @@ class Mapping:
     52 50 48
     """
 
-    def __init__(self, mappings):
-        self.map_segments = list(sorted(mappings))
+    def __init__(self, source_name, dest_name, mappings):
+        self.source_name = source_name
+        self.dest_name = dest_name
+        self.map_segments = mappings  # list(sorted(mappings))
+
+    def __repr__(self):
+        return f"{self.source_name}-to-{self.dest_name}"
+
+    def __eq__(self, other):
+        return (self.source_name, self.dest_name, self.map_segments) == (
+            other.source_name,
+            other.dest_name,
+            other.map_segments,
+        )
 
     def __getitem__(self, index):
         # get the "destination index" when we query an input index
         for mapping in self.map_segments:
-            print(f">>> segment: {(mapping.source_start, mapping.source_end)}")
+            # print(f">>> segment: {(mapping.source_start, mapping.source_end)}")
             if index in mapping:
                 return mapping[index]
         # If we don't have a custom mapping for this index,
         # then it maps to the same destination
-        print(f"un-mapped index {index}")
+        # print(f"un-mapped index {index}")
         return index
 
 
-def parse_segment(line):
+@dataclass
+class ChainedMapping:
+    # chains source-to-dest lookups until we dont have one
+    mappings: dict[str, Mapping] = None
+    start: str = "seed"
+    verbose: bool = False
+
+    def __getitem__(self, index) -> int:
+        assert self.mappings is not None, "ChainedMapping must be initialized with mappings"
+        assert self.start in self.mappings, f"mappings must include '{self.start}' key"
+        source_name = self.start
+        _index = index
+        while source_name in self.mappings:
+            mapping = self.mappings[source_name]
+            _index = mapping[_index]
+            source_name = mapping.dest_name
+        return _index
+
+
+def parse_segment(line: str) -> MapSegment:
     dest_start, source_start, size = [int(item) for item in line.split()]
     return MapSegment(dest_start=dest_start, source_start=source_start, size=size)
 
 
+def parse_input(lines: list[str]):
+    seeds = None
+    mappings = {}
+    mapping = None
+    for line in lines:
+        if line.startswith("seeds"):
+            seeds = [int(item) for item in line[7:].split()]
+        elif " map:" in line:
+            # start a new mapping
+            a_to_b = line[:-5]  # strip off the " map:" suffix
+            source_name, dest_name = a_to_b.split("-to-")
+            mapping = Mapping(source_name, dest_name, [])
+            # store by source name so we can use current dest to look for next mapping
+            mappings[mapping.source_name] = mapping
+        elif line == "":
+            mapping = None
+        elif line[0] in "0123456789":
+            if mapping is not None:
+                # This is a bit inelegant,
+                # but lets us avoid keeping parsed-but-not-stored segments
+                mapping.map_segments.append(parse_segment(line))
+    return (seeds, mappings)
+
+
 def part_1(input, verbose=False):
-    pass
+    seeds, mappings = parse_input(input)
+    m = ChainedMapping(mappings=mappings)
+    locations = [m[seed] for seed in seeds]
+    smallest_location = min(locations)
+    return smallest_location
 
 
 # ------------------
