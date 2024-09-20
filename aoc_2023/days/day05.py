@@ -53,7 +53,7 @@ toy_input: list[str] = [
 # Numbers are reused by each category
 # soil 123 and fertilizer 123 aren't necessarily related
 #
-# NOTE: A plain dict is probably not sufficient, as valaue ranges are _really big_:
+# NOTE: A plain dict is probably not sufficient, as value ranges are _really big_:
 #
 #   seed-to-soil map:
 #   357888202 777841571 45089383
@@ -205,6 +205,11 @@ def part_1(input, verbose=False):
 # ------------------
 # the seeds line describes ranges of seed numbers.
 # values are pairs (start, len)
+#
+# Trying to do this the way we did initially (checking values) will NOT
+# work, because the Real Data is much larger than the original.
+# Instead, we need to track each interval of numbers, and split them into
+# smaller ones as we let them trickle through the location-translation layers.
 
 
 def batched(iterable, n):
@@ -223,11 +228,22 @@ def parse_seed_data(seed_data: list[int]) -> list[range]:
 
 
 def part_2(input, verbose=False):
+    # return the smallest location of a seed
+    # this is the same as the first itemin the smallest interval
     seed_data, mappings = parse_input(input)
     seed_ranges = parse_seed_data(seed_data)
+    if verbose:
+        print(f"seed ranges: {seed_ranges}")
     m = ChainedMapping(mappings=mappings)
-    locations = [m[seed] for seeds in seed_ranges for seed in seeds]
-    smallest_location = min(locations)
+    # This STILL Doesn't work, because the sizes of the ranges are GIGANTIC,
+    # and we would end up queryting ~2M times per seed range
+    # eg. range(222541566, 440946026), range(670428364, 1102901266)
+    # use generator in hopes this lets us skip allocating a big list of locations
+    smallest_location = min(
+        m[seed]
+        for seeds in seed_ranges
+        for seed in seeds
+    )
     return smallest_location
 
 
