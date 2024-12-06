@@ -1,4 +1,6 @@
+advent-of-code-data==2.0.4
 ansicolors==1.1.8
 black==23.11.0
 numpy==1.26.2
 pytest==7.4.3
+rich==13.9.4
