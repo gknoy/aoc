@@ -3,6 +3,9 @@
 # ----------------------
 from typing import Any, Generator, List, Set, Tuple
 
+from aocd import get_data
+
+
 BOLD = "\033[1m"
 CLEAR = "\033[0m"
 
@@ -14,9 +17,20 @@ Grid = List[List[int]]
 
 def get_line_items(fname) -> Generator[str, Any, None]:
     """Read all the lines from an input file into an array of strings"""
-    with open(fname) as f:
-        # 2022, day 5: rstrip vs strip: don't strip leading whitespace!
-        return (item.rstrip() for item in f.readlines())
+    # expected format
+    # get_line_items("aoc_2022/input/07.txt")
+    #                 0   4567
+    if fname:
+        year = int(fname[4:8])
+        day = int(fname[15:17])
+    try:
+        with open(fname) as f:
+            # 2022, day 5: rstrip vs strip: don't strip leading whitespace!
+            return (item.rstrip() for item in f.readlines())
+    except:
+        input = get_data(day=day, year=year)
+        return (item.rstrip() for item in input.split("\n"))
+
 
 
 def parse_one_line_input(input: List[str]) -> List[int]:
