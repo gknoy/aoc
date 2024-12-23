@@ -224,4 +224,4 @@ def test_part_2_toy():
 
 
 def test_part_2_real():
-    assert part_2(input) == "FIXME"
+    assert part_2(input) == 74528807

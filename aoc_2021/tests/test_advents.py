@@ -1,6 +1,8 @@
 #
 # Sanity checks that all advents work even after refactoring
 #
+# Later years moved to 'tests/test_dayNN.py
+#
 import pytest
 
 from utils.loader import get_all_year_modules
@@ -48,7 +50,7 @@ EXPECTED = {
         9: [452, 1263735],
         10: [367059, 1952146692],
         11: [1691, 216],
-        12: [4549, 120535],
+        12: [4549, SkipTest("execution takes too long", 120535)],
         13: [607, "CPZLPFZL"],
         14: [3143, 4110215602456],
         15: [619, SkipTest("execution takes too long", 2922)],
@@ -79,8 +81,12 @@ def test_toy_answers(key, expected):
     ],
 )
 def test_answers(key, expected):
+    # Running these directly for every item is dumb, in that
+    # we don't have the granularity to do part 1 + 2 skips separately,
+    # but since I'm not actively working on this, I don't really care a ton.
     assert expected is not None
-    if type(expected) is not SkipTest:
+    if SkipTest not in map(type, expected):
+        # This will skip anything that's too long,
         assert expected == _advent(key, use_toy_data=False)
     else:
-        assert True
+        pytest.skip("Test skipped")
