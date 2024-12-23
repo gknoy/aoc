@@ -3,19 +3,52 @@
 """
 from aocd import get_data
 
-from utils.utils import get_line_items
-
 # input = list(get_line_items("aoc_2024/input/01.txt"))
-input = get_data(day=1, year=2024)
+input = get_data(day=1, year=2024).split("\n")
 
 toy_input: list[str] = [
     # fmt: off
+    "3   4",
+    "4   3",
+    "2   5",
+    "1   3",
+    "3   9",
+    "3   3",
     # fmt: on
 ]
 
+# ====================================
+# Part 1:
+# ====================================
+
+def parse_lines_into_two_unsorted_lists(input: list[str]) -> tuple[list[int]]:
+    """
+    input: rows of strings representing pairs of nubmers
+    This is almost certainly different from what we need in
+    """
+    a_items = []
+    b_items = []
+
+    for line in input:
+        a, b = map(int, line.split())
+        a_items.append(a)
+        b_items.append(b)
+
+    return (a_items, b_items)
 
 def part_1(input, verbose=False):
-    pass
+    """
+    # - sort the items in each column
+    # - pair up each (e.g. (smallest from A, smallest from B))
+    # - add up instances between items in each pair
+    """
+    a_items, b_items = map(sorted, parse_lines_into_two_unsorted_lists(input))
+    pairs = [(a, b) for a, b in zip(a_items, b_items)]
+    
+    return sum(
+        abs(a - b)
+        for a, b in pairs
+    )
 
 
 def part_2(input, verbose=False):

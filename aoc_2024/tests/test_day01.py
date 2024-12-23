@@ -5,7 +5,7 @@ from aoc_2024.days.day01 import input, toy_input, part_1, part_2
 
 
 def test_part_1_toy():
-    assert part_1(toy_input) == "FIXME"
+    assert part_1(toy_input) == 11
 
 
 def test_part_1_real():

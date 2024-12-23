@@ -6,7 +6,7 @@ from aocd import get_data
 from utils.utils import get_line_items
 
 # input = list(get_line_items("aoc_2024/input/NN.txt"))
-input = get_data(day=N, year=2024)
+input = get_data(day=N, year=2024).split("\n")
 
 toy_input: list[str] = [
     # fmt: off
