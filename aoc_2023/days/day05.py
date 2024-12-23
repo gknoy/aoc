@@ -95,7 +95,8 @@ class MapSegment:
     def __lt__(self, other):
         # The sort algorithm uses only < comparisons between items
         # We only care about source mapping indexes so that we can
-        return self.source_start < other.source_start
+        # order these by smallest END location
+        return self.dest_start < other.dest_start
 
     def __getitem__(self, index):
         """Used when checking whether input is in range that we handle"""
@@ -229,7 +230,7 @@ def parse_seed_data(seed_data: list[int]) -> list[range]:
 
 def part_2(input, verbose=False):
     # return the smallest location of a seed
-    # this is the same as the first itemin the smallest interval
+    # this is the same as the first item in the smallest interval
     seed_data, mappings = parse_input(input)
     seed_ranges = parse_seed_data(seed_data)
     if verbose:
@@ -250,3 +251,25 @@ def part_2(input, verbose=False):
 def day_5(use_toy_data=False, verbose=False):
     data = toy_input if use_toy_data else input
     return [part_1(data, verbose), part_2(data, verbose)]
+
+
+def condense_maps(map_a: Mapping, map_b: Mapping) -> Mapping:  # FIXME arg names
+    """
+    Rewrite an existing mapping so that it is split into different ranges
+    so that we can go from seed <-> (last mapping)
+
+    in:
+        a: [
+            (50, 98, 2),
+            (52, 50, 48),
+        ]
+        b: [
+            (0, 15, 37),
+            (37, 52, 2),
+            (39, 0, 15),
+        ]
+
+    Redrawn as ranges:
+        WTF i can't even visualize this.
+        TODO: Draw on paper
+    """
