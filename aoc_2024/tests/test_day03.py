@@ -9,7 +9,7 @@ def test_part_1_toy():
 
 
 def test_part_1_real():
-    assert part_1(input) == "FIXME"
+    assert part_1(input) == 187825547
 
 
 def test_part_2_toy():
